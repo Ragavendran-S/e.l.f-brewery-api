@@ -1,0 +1,43 @@
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/bin/Release/net6.0/appsettings.Development.json
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/bin/Release/net6.0/appsettings.json
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/bin/Release/net6.0/e.l.f. Beauty
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/bin/Release/net6.0/e.l.f. Beauty.deps.json
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/bin/Release/net6.0/e.l.f. Beauty.runtimeconfig.json
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/bin/Release/net6.0/e.l.f. Beauty.dll
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/bin/Release/net6.0/e.l.f. Beauty.pdb
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/bin/Release/net6.0/Microsoft.OpenApi.dll
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/bin/Release/net6.0/Swashbuckle.AspNetCore.Swagger.dll
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/bin/Release/net6.0/Swashbuckle.AspNetCore.SwaggerGen.dll
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/bin/Release/net6.0/Swashbuckle.AspNetCore.SwaggerUI.dll
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/obj/Release/net6.0/e.l.f. Beauty.csproj.AssemblyReference.cache
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/obj/Release/net6.0/e.l.f. Beauty.GeneratedMSBuildEditorConfig.editorconfig
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/obj/Release/net6.0/e.l.f. Beauty.AssemblyInfoInputs.cache
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/obj/Release/net6.0/e.l.f. Beauty.AssemblyInfo.cs
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/obj/Release/net6.0/e.l.f. Beauty.csproj.CoreCompileInputs.cache
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/obj/Release/net6.0/e.l.f. Beauty.MvcApplicationPartsAssemblyInfo.cs
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/obj/Release/net6.0/e.l.f. Beauty.MvcApplicationPartsAssemblyInfo.cache
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/obj/Release/net6.0/staticwebassets/msbuild.e.l.f. Beauty.Microsoft.AspNetCore.StaticWebAssets.props
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/obj/Release/net6.0/staticwebassets/msbuild.build.e.l.f. Beauty.props
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/obj/Release/net6.0/staticwebassets/msbuild.buildMultiTargeting.e.l.f. Beauty.props
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/obj/Release/net6.0/staticwebassets/msbuild.buildTransitive.e.l.f. Beauty.props
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/obj/Release/net6.0/staticwebassets.pack.json
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/obj/Release/net6.0/staticwebassets.build.json
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/obj/Release/net6.0/staticwebassets.development.json
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/obj/Release/net6.0/scopedcss/bundle/e.l.f. Beauty.styles.css
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/obj/Release/net6.0/e.l.f. Beauty.csproj.CopyComplete
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/obj/Release/net6.0/e.l.f. Beauty.dll
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/obj/Release/net6.0/refint/e.l.f. Beauty.dll
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/obj/Release/net6.0/e.l.f. Beauty.pdb
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/obj/Release/net6.0/e.l.f. Beauty.genruntimeconfig.cache
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/obj/Release/net6.0/ref/e.l.f. Beauty.dll
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/bin/Release/net6.0/Microsoft.EntityFrameworkCore.dll
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/bin/Release/net6.0/Microsoft.EntityFrameworkCore.Abstractions.dll
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/bin/Release/net6.0/Microsoft.Extensions.Caching.Abstractions.dll
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/bin/Release/net6.0/Microsoft.Extensions.Caching.Memory.dll
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/bin/Release/net6.0/Microsoft.Extensions.DependencyInjection.dll
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/bin/Release/net6.0/Microsoft.Extensions.Logging.dll
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/bin/Release/net6.0/Microsoft.Extensions.Logging.Abstractions.dll
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/bin/Release/net6.0/Microsoft.Extensions.Options.dll
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/bin/Release/net6.0/Microsoft.Extensions.Primitives.dll
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/bin/Release/net6.0/System.Collections.Immutable.dll
+/Users/ra20557683/Projects/e.l.f. Beauty/e.l.f. Beauty/bin/Release/net6.0/System.Diagnostics.DiagnosticSource.dll
