@@ -52,8 +52,7 @@ namespace e.l.f._Beauty.Services
                 breweries = breweries.ToList();
 
                 // Search filter
-                try
-                {
+                
                     if (!string.IsNullOrEmpty(options.Search))
                     {
                         _logger.LogInformation("Applying search filter: {Search}", options.Search);
@@ -63,14 +62,6 @@ namespace e.l.f._Beauty.Services
                                         b.Name.Contains(options.Search, StringComparison.OrdinalIgnoreCase))
                             .ToList();
                     }
-                }
-                catch (HttpRequestException ex)
-                {
-                    _logger.LogWarning(ex, "Error in Searching Breweries.");
-                    throw; // bubble up to global handler
-                }
-                try
-                {
                     // City filter
                     if (!string.IsNullOrEmpty(options.City))
                     {
@@ -81,14 +72,6 @@ namespace e.l.f._Beauty.Services
                                         b.City.Equals(options.City, StringComparison.OrdinalIgnoreCase))
                             .ToList();
                     }
-                }
-                catch (HttpRequestException ex)
-                {
-                    _logger.LogWarning(ex, "Error in Filtering Breweries.");
-                    throw; // bubble up to global handler
-                }
-                try
-                {
                     // Sorting
                     _logger.LogInformation("Sorting by {SortBy}, Ascending: {Ascending}", options.SortBy, options.Ascending);
 
@@ -104,14 +87,6 @@ namespace e.l.f._Beauty.Services
                             ? breweries.OrderBy(b => b.Name ?? string.Empty).ToList()
                             : breweries.OrderByDescending(b => b.Name ?? string.Empty).ToList()
                     };
-                }
-                catch (HttpRequestException ex)
-                {
-                    _logger.LogWarning(ex, "Error in Sorting Breweries.");
-                    throw; // bubble up to global handler
-                }
-                try
-                {
                     // Paging
                     var totalItems = breweries.Count();
                     var items = breweries
@@ -122,12 +97,6 @@ namespace e.l.f._Beauty.Services
                     _logger.LogInformation("Returning {Count} items out of {Total} total for Page {Page} with PageSize {PageSize}.",
                         items.Count, totalItems, options.Page, options.PageSize);
                     return new PagedResult<Brewery>(items, totalItems, options.Page, options.PageSize);
-                }
-                catch (HttpRequestException ex)
-                {
-                    _logger.LogWarning(ex, "Error in Paging Breweries.");
-                    throw; // bubble up to global handler
-                }
                 
             }
             catch (HttpRequestException ex)
