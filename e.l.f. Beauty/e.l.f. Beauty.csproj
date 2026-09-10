@@ -26,13 +26,11 @@
     <None Remove="Repository\" />
     <None Remove="Services\" />
     <None Remove="Validator\" />
-    <None Remove="e.l.f._Beauty.Tests\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Repository\" />
     <Folder Include="Services\" />
     <Folder Include="Validator\" />
-    <Folder Include="e.l.f._Beauty.Tests\" />
   </ItemGroup>
   
 </Project>

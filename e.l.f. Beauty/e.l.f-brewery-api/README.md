@@ -59,7 +59,49 @@ ASP.NET Core configuration merges multiple sources. If a value appears unexpecte
 ---
 
 ## Authentication and token flow
+### README update — add local secrets steps
 
+Below is a ready‑to‑paste section you can insert into the **Configuration and secrets** area of your `README.md`. It places the new instructions in the appropriate spot and keeps the existing guidance about Base64 keys and not committing secrets.
+
+> **From the project:** `The Jwt:Key in this project is a Base64 string. When creating or validating tokens the code uses Convert.FromBase64String to obtain the signing key bytes.`  
+> **From the project:** `Never commit production secrets. Use environment variables or dotnet user-secrets for local development.`
+
+---
+
+#### Add secrets in local environments
+
+Use the .NET user‑secrets tool to store JWT settings locally (do **not** commit these values). Run the following commands from the API project folder (the folder that contains the `.csproj` file):
+
+```bash
+# initialize user-secrets for the project (run once per project)
+dotnet user-secrets init
+
+# generate a 256-bit Base64 key and store it
+dotnet user-secrets set "Jwt:Key" "$(openssl rand -base64 32)"
+
+# set issuer and audience
+dotnet user-secrets set "Jwt:Issuer" "brewery-api"
+dotnet user-secrets set "Jwt:Audience" "brewery-api"
+```
+
+**Verify stored secrets**
+```bash
+dotnet user-secrets list
+```
+
+**Notes**
+- The `Jwt:Key` must be a Base64 string because the application uses `Convert.FromBase64String(Jwt:Key)` to obtain the signing key bytes.  
+- Do **not** commit user‑secrets, `.env` files, or any files containing secrets to source control. Use environment variables or a secrets manager for production.  
+- If you use Windows without `openssl`, generate a Base64 key with PowerShell:
+```powershell
+[Convert]::ToBase64String((New-Object System.Security.Cryptography.RNGCryptoServiceProvider).GetBytes(32))
+```
+
+---
+
+If you want, I can:
+- Insert this block into the exact place in your `README.md` and return the full updated file content ready to commit, or  
+- Provide a one‑line `git` command sequence to add the updated README and push it to your branch.
 ### How tokens are issued
 - `POST /api/auth/login` accepts a `LoginModel` and returns a JWT when credentials are valid.
 - Token creation uses:
