@@ -1,0 +1,23 @@
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      Jwt__Key: ${{ secrets.JWT_KEY }}
+      Jwt__Issuer: ${{ secrets.JWT_ISSUER }}
+      Jwt__Audience: ${{ secrets.JWT_AUDIENCE }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '6.0.x'
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore
+
+      - name: Test
+        run: dotnet test --no-build

@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "CtGt9kbovuNgOo+OKHfm4YRVnCH+ggq4363pBRnhc4rtFMMTMqcFS+in9vhDl6XzyUEXtSR3fui0Px/nzsiwyA==",
+  "dgSpecHash": "B/Vi5S+QiHRD5OBEjgCh1zzzmGqaPUi/xbCPMWXg4YBwfKzuAOYq8FpoCLz+UyKHZ4f3YrUO3n8zSWXPmvka1w==",
   "success": true,
   "projectFilePath": "/Users/ra20557683/Projects/e.l.f-brewery-api/e.l.f. Beauty/e.l.f. Beauty.csproj",
   "expectedPackageFiles": [
+    "/Users/ra20557683/.nuget/packages/castle.core/5.1.1/castle.core.5.1.1.nupkg.sha512",
     "/Users/ra20557683/.nuget/packages/humanizer.core/2.8.26/humanizer.core.2.8.26.nupkg.sha512",
     "/Users/ra20557683/.nuget/packages/microsoft.aspnetcore.authentication.jwtbearer/6.0.36/microsoft.aspnetcore.authentication.jwtbearer.6.0.36.nupkg.sha512",
     "/Users/ra20557683/.nuget/packages/microsoft.aspnetcore.mvc.versioning/5.1.0/microsoft.aspnetcore.mvc.versioning.5.1.0.nupkg.sha512",
@@ -38,6 +39,7 @@
     "/Users/ra20557683/.nuget/packages/microsoft.netcore.platforms/1.1.0/microsoft.netcore.platforms.1.1.0.nupkg.sha512",
     "/Users/ra20557683/.nuget/packages/microsoft.netcore.targets/1.1.0/microsoft.netcore.targets.1.1.0.nupkg.sha512",
     "/Users/ra20557683/.nuget/packages/microsoft.openapi/1.2.3/microsoft.openapi.1.2.3.nupkg.sha512",
+    "/Users/ra20557683/.nuget/packages/moq/4.20.72/moq.4.20.72.nupkg.sha512",
     "/Users/ra20557683/.nuget/packages/sqlitepclraw.bundle_e_sqlite3/2.1.2/sqlitepclraw.bundle_e_sqlite3.2.1.2.nupkg.sha512",
     "/Users/ra20557683/.nuget/packages/sqlitepclraw.core/2.1.2/sqlitepclraw.core.2.1.2.nupkg.sha512",
     "/Users/ra20557683/.nuget/packages/sqlitepclraw.lib.e_sqlite3/2.1.2/sqlitepclraw.lib.e_sqlite3.2.1.2.nupkg.sha512",
@@ -49,6 +51,7 @@
     "/Users/ra20557683/.nuget/packages/system.buffers/4.5.1/system.buffers.4.5.1.nupkg.sha512",
     "/Users/ra20557683/.nuget/packages/system.collections.immutable/6.0.1/system.collections.immutable.6.0.1.nupkg.sha512",
     "/Users/ra20557683/.nuget/packages/system.diagnostics.diagnosticsource/6.0.2/system.diagnostics.diagnosticsource.6.0.2.nupkg.sha512",
+    "/Users/ra20557683/.nuget/packages/system.diagnostics.eventlog/6.0.0/system.diagnostics.eventlog.6.0.0.nupkg.sha512",
     "/Users/ra20557683/.nuget/packages/system.identitymodel.tokens.jwt/6.35.0/system.identitymodel.tokens.jwt.6.35.0.nupkg.sha512",
     "/Users/ra20557683/.nuget/packages/system.memory/4.5.4/system.memory.4.5.4.nupkg.sha512",
     "/Users/ra20557683/.nuget/packages/system.runtime/4.3.0/system.runtime.4.3.0.nupkg.sha512",

@@ -11,9 +11,15 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using System.Security.Cryptography;
+using System;
+using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
-
+//var keyBytes = RandomNumberGenerator.GetBytes(32); // 256 bits
+//var base64Key = Convert.ToBase64String(keyBytes);
+//Console.WriteLine(base64Key);
+var key = Environment.GetEnvironmentVariable("Jwt:Key");
 var jwtKey = builder.Configuration["Jwt:Key"];
 var jwtIssuer = builder.Configuration["Jwt:Issuer"];
 var jwtAudience = builder.Configuration["Jwt:Audience"];
@@ -22,6 +28,19 @@ var jwtAudience = builder.Configuration["Jwt:Audience"];
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        options.Events = new JwtBearerEvents
+        {
+            OnAuthenticationFailed = ctx =>
+            {
+                Console.WriteLine($" Token failed: {ctx.Exception.Message}");
+                return Task.CompletedTask;
+            },
+            OnTokenValidated = ctx =>
+            {
+                Console.WriteLine(" Token validated successfully");
+                return Task.CompletedTask;
+            }
+        };
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -30,7 +49,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             ValidIssuer = jwtIssuer,
             ValidAudience = jwtAudience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+            IssuerSigningKey = new SymmetricSecurityKey(Convert.FromBase64String(jwtKey))
         };
     });
 
@@ -45,7 +64,7 @@ builder.Services.AddControllers();
 //builder.Services.AddDbContext<BreweryDbContext>(options =>
 //    options.UseSqlite("Data Source=brewery.db"));
 // Add services to the container.
-
+builder.Services.AddScoped<TokenValidator>();
 builder.Services.AddControllers();
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient<IBreweryRepository, BreweryRepository>();
@@ -102,7 +121,7 @@ builder.Services.AddVersionedApiExplorer(options =>
 var app = builder.Build();
 // Middleware pipeline
 app.UseAuthentication();   // validates JWT
-
+app.UseAuthorization();// Enforce [Authorize] attributes
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -120,7 +139,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-//app.UseAuthorization();
+
 // Use global exception handler
 app.UseMiddleware<GlobalExceptionMiddleware>();
 app.MapControllers();

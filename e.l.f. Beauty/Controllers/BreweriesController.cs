@@ -21,6 +21,7 @@ namespace e.l.f._Beauty.Controllers
     {
         private readonly IBreweryService _service;
         private readonly ILogger<BreweryService> _logger;
+        
         public BreweriesController(IBreweryService service, ILogger<BreweryService> logger) { _service = service; _logger = logger; }
 
         [HttpGet]
@@ -30,6 +31,7 @@ namespace e.l.f._Beauty.Controllers
             var result = await _service.GetBreweriesAsync(options);
             return Ok(result);
         }
+        
         [HttpGet("autocomplete")]
         public async Task<IActionResult> Autocomplete([FromQuery] string query)
         {
