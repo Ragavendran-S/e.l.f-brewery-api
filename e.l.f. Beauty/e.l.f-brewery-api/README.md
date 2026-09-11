@@ -99,9 +99,6 @@ dotnet user-secrets list
 
 ---
 
-If you want, I can:
-- Insert this block into the exact place in your `README.md` and return the full updated file content ready to commit, or  
-- Provide a one‑line `git` command sequence to add the updated README and push it to your branch.
 ### How tokens are issued
 - `POST /api/auth/login` accepts a `LoginModel` and returns a JWT when credentials are valid.
 - Token creation uses:
@@ -213,5 +210,3 @@ This prints validation results to the console and helps diagnose signature, issu
 - `ConfigureSwaggerOptions.cs` — Swagger per-version configuration
 
 ---
-
-If you want, I can generate a ready‑to‑paste `README.md` file with the exact text above formatted for your repository, or add a short troubleshooting script that checks for common JWT misconfigurations.
