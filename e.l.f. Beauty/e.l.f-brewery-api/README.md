@@ -94,6 +94,79 @@ Response
   "token": "<JWT_TOKEN>",
   "expiresIn": 1800
 }
+###Perfect — let’s add a **clear, step‑by‑step EF Core migrations section** to your project’s README so anyone on your team can reliably initialize and update the database.  
+
+---
+
+## 📌 Where to Add in README
+Place this section **after your “Setup Instructions”** and before “Running the API.” That way, developers see it right after cloning and restoring packages, ensuring they don’t miss DB initialization.
+
+---
+
+## 📌 README Section: Database Initialization & Migrations
+
+```markdown
+## Database Initialization & Migrations
+
+This project uses **Entity Framework Core** with SQLite. To ensure the database schema is created and updated reliably, follow these steps:
+
+### 1. Install EF Core Tools
+Make sure you have the EF Core CLI tools installed:
+```bash
+dotnet tool install --global dotnet-ef
+dotnet tool update --global dotnet-ef
+```
+
+### 2. Add EF Core Packages
+Ensure the following NuGet packages are installed:
+```bash
+dotnet add package Microsoft.EntityFrameworkCore.Sqlite
+dotnet add package Microsoft.EntityFrameworkCore.Design
+```
+
+### 3. Configure DbContext
+In `Program.cs`, register the DbContext:
+```csharp
+builder.Services.AddDbContext<BreweryDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+```
+
+In `appsettings.json`:
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Data Source=brewery.db"
+  }
+}
+```
+
+### 4. Create Initial Migration
+Generate the first migration:
+```bash
+dotnet ef migrations add InitialCreate
+```
+
+This creates a `Migrations` folder with schema snapshots.
+
+### 5. Apply Migration
+Update the database:
+```bash
+dotnet ef database update
+```
+
+This creates the `brewery.db` file with the schema.
+
+### 6. Apply Migrations at Startup
+To ensure migrations run automatically, add this to `Program.cs` after building the app:
+```csharp
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<BreweryDbContext>();
+    db.Database.Migrate(); // applies pending migrations automatically
+}
+```
+
+---
 
 ### Example Requests
 Using curl:

@@ -1,27 +1,27 @@
-﻿
-using System.Text;
-using e.l.f._Beauty.Repository;
+﻿using e.l.f._Beauty.Repository;
 using e.l.f._Beauty.Services;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using System.Security.Cryptography;
-using System;
-using Microsoft.Extensions.Hosting;
 using e.l.f._Beauty.ConfigureSwaggerOptions;
-using e.l.f._Beauty.GlobalException;
 using e.l.f._Beauty.JwtOptions;
+using e.l.f.GlobalException;
+using Microsoft.Extensions.Logging;
+using e.l.f.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
+// configure services...
+builder.Services.AddLogging(logging =>
+{
+    logging.ClearProviders();
+    logging.AddConsole(); // or your preferred provider
+    logging.SetMinimumLevel(LogLevel.Information);
+});
 //var keyBytes = RandomNumberGenerator.GetBytes(32); // 256 bits
 //var base64Key = Convert.ToBase64String(keyBytes);
-//Console.WriteLine(base64Key);
 var key = Environment.GetEnvironmentVariable("Jwt:Key");
 var jwtKey = builder.Configuration["Jwt:Key"];
 var jwtIssuer = builder.Configuration["Jwt:Issuer"];
@@ -130,6 +130,17 @@ builder.Services.AddVersionedApiExplorer(options =>
 });
 
 var app = builder.Build();
+// get logger instance
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+
+// Example: replace Console.WriteLine for JWT events
+logger.LogInformation(EventIds.AuthStartup, "JWT authentication configured");
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<BreweryDbContext>();
+    db.Database.Migrate(); // applies pending migrations
+}
+
 // Middleware pipeline
 app.UseAuthentication();   // validates JWT
 app.UseAuthorization();// Enforce [Authorize] attributes
@@ -147,12 +158,12 @@ if (app.Environment.IsDevelopment())
         }
     });
 }
-
+app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseHttpsRedirection();
 
 
 // Use global exception handler
-app.UseMiddleware<GlobalExceptionMiddleware>();
+
 app.MapControllers();
 
 app.Run();

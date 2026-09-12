@@ -4,6 +4,7 @@ using Microsoft.Extensions.Caching.Memory;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
+using e.l.f.Validation;
 
 namespace e.l.f._Beauty.Repository
 {
@@ -23,7 +24,11 @@ namespace e.l.f._Beauty.Repository
         {
             var response = await _httpClient.GetAsync("https://api.openbrewerydb.org/v1/breweries");
             response.EnsureSuccessStatusCode();
-
+            if (!response.IsSuccessStatusCode)
+            {
+                // Map 4xx/5xx to UpstreamApiException with status and body
+                throw new UpstreamApiException((int)response.StatusCode, $"Upstream returned {(int)response.StatusCode}", response.ReasonPhrase);
+            }
             var json = await response.Content.ReadAsStringAsync();
             
             return JsonSerializer.Deserialize<IEnumerable<Brewery>>(json,
@@ -35,7 +40,11 @@ namespace e.l.f._Beauty.Repository
         {
             var response = await _httpClient.GetAsync("https://api.openbrewerydb.org/v1/breweries?by_name=name");
             response.EnsureSuccessStatusCode();
-
+            if (!response.IsSuccessStatusCode)
+            {
+                // Map 4xx/5xx to UpstreamApiException with status and body
+                throw new UpstreamApiException((int)response.StatusCode, $"Upstream returned {(int)response.StatusCode}", response.ReasonPhrase);
+            }
             var json = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<IEnumerable<Brewery>>(json,
              new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
@@ -53,8 +62,12 @@ namespace e.l.f._Beauty.Repository
                 // Open Brewery DB supports autocomplete via /breweries/autocomplete
                 var response = await _httpClient.GetAsync($"https://api.openbrewerydb.org/v1/breweries/autocomplete?query={query}");
                 response.EnsureSuccessStatusCode();
-
-                var json = await response.Content.ReadAsStringAsync();
+                if (!response.IsSuccessStatusCode)
+                {
+                    // Map 4xx/5xx to UpstreamApiException with status and body
+                    throw new UpstreamApiException((int)response.StatusCode, $"Upstream returned {(int)response.StatusCode}", response.ReasonPhrase);
+                }
+              var json = await response.Content.ReadAsStringAsync();
 
                 var breweries = JsonSerializer.Deserialize<List<Brewery>>(json,
                     new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
