@@ -33,4 +33,24 @@ public class CachedBreweryRepository : IBreweryRepository
             return await _inner.SearchBreweriesAsync(query);
         });
     }
+    public async Task<IEnumerable<Brewery?>> GetBreweryByNameAsync(string name)
+    {
+        return await _cache.GetOrCreateAsync($"brewery:{name}", async entry =>
+        {
+            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
+            _logger.LogInformation("Cache miss for brewery {Id} at {Time}", name, DateTime.UtcNow);
+            return await _inner.GetBreweryByNameAsync(name);
+        });
+    }
+
+    public async Task AddBreweryAsync(Brewery brewery)
+    {
+        // Add directly to inner rep\
+        await _inner.AddBreweryAsync(brewery);
+
+        // Invalidate cache so next read is fresh
+        _cache.Remove("breweries");
+        _cache.Remove($"brewery:{brewery.Id}");
+        _logger.LogInformation("Cache invalidated after adding brewery {Id} at {Time}", brewery.Id, DateTime.UtcNow);
+    }
 }

@@ -1,53 +1,60 @@
 ﻿<Properties StartupConfiguration="{029567FA-F9E4-40F3-9257-16948F069019}|Default">
-  <MonoDevelop.Ide.Workbench ActiveDocument="e.l.f. Beauty/appsettings.Development.json">
+  <MonoDevelop.Ide.Workbench ActiveDocument="e.l.f. Beauty/Program.cs">
     <Files>
-      <File FileName="e.l.f. Beauty/appsettings.json" Line="12" Column="7" />
-      <File FileName=".vs/e.l.f. Beauty/xs/UserPrefs.xml" Line="34" Column="14" />
-      <File FileName="e.l.f. Beauty/e.l.f-brewery-api/README.md" Line="1" Column="61" />
-      <File FileName="e.l.f. Beauty/Services/BreweryService.cs" Line="62" Column="14" />
+      <File FileName="e.l.f. Beauty/appsettings.json" Line="10" Column="5" />
+      <File FileName=".vs/e.l.f. Beauty/xs/UserPrefs.xml" />
+      <File FileName="e.l.f. Beauty/e.l.f-brewery-api/README.md" Line="124" Column="62" />
+      <File FileName="e.l.f. Beauty/Services/BreweryService.cs" Line="72" Column="1" />
       <File FileName="e.l.f. Beauty/appsettings.Development.json" Line="10" Column="1" />
+      <File FileName="e.l.f. Beauty/JwtOptions.cs" Line="10" Column="1" />
+      <File FileName="e.l.f. Beauty/Program.cs" Line="137" Column="2" />
+      <File FileName="e.l.f. Beauty/GlobalException.cs" Line="19" Column="1" />
+      <File FileName="e.l.f. Beauty/ConfigureSwaggerOptions.cs" Line="28" Column="2" />
+      <File FileName="e.l.f. Beauty/Controllers/AuthController.cs" Line="42" Column="39" />
+      <File FileName="e.l.f. Beauty/AutoMapper/AutomapperModel.cs" Line="6" Column="19" />
+      <File FileName="e.l.f. Beauty/Repository/BreweryRepository.cs" Line="64" Column="1" />
+      <File FileName="e.l.f. Beauty/Repository/IBreweryRepository.cs" Line="9" Column="48" />
+      <File FileName="e.l.f. Beauty/Repository/EFCoreBreweryRepository.cs" Line="18" Column="49" />
+      <File FileName="e.l.f. Beauty/Repository/BreweryDbContext.cs" Line="16" Column="2" />
+      <File FileName="e.l.f. Beauty/Models/Brewery.cs" Line="21" Column="1" />
+      <File FileName="e.l.f. Beauty/Controllers/BreweriesController.cs" Line="57" Column="1" />
+      <File FileName="e.l.f. Beauty/Repository/InMemoryBreweryRepository.cs" Line="17" Column="45" />
+      <File FileName="e.l.f. Beauty/Services/IBreweryService.cs" Line="9" Column="40" />
+      <File FileName="e.l.f. Beauty/Services/Sorting/NameSorter.cs" Line="8" Column="1" />
+      <File FileName="e.l.f. Beauty/Services/Sorting/IBrewerySorter.cs" Line="1" Column="1" />
+      <File FileName="e.l.f. Beauty/Services/Sorting/DistanceSorter.cs" Line="11" Column="102" />
+      <File FileName="e.l.f. Beauty/Services/Sorting/CitySorter.cs" Line="1" Column="1" />
+      <File FileName="e.l.f. Beauty/Services/Sorting/BrewerySorterFactory.cs" Line="8" Column="1" />
+      <File FileName="e.l.f. Beauty/Validator/TokenValidator.cs" Line="1" Column="1" />
+      <File FileName="e.l.f. Beauty/Controllers/BreweriesControllerV2.cs" Line="29" Column="1" />
+      <File FileName="e.l.f. Beauty/Services/Caching/MemoryCacheExtensions.cs" Line="19" Column="1" />
+      <File FileName="e.l.f. Beauty/Services/Filter/BreweryFilter.cs" Line="15" Column="2" />
+      <File FileName="e.l.f. Beauty/Services/Paging/PagingHelper.cs" Line="9" Column="1" />
+      <File FileName="e.l.f. Beauty/AutoMapper/BreweryProfile.cs" Line="14" Column="47" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State name="__root__">
-          <Node name="e.l.f. Beauty">
-            <Node name="e.l.f. Beauty">
-              <Node name="Services" expanded="True" />
-              <Node name="appsettings.json" expanded="True">
-                <Node name="appsettings.Development.json" selected="True" />
-              </Node>
-            </Node>
-          </Node>
-        </State>
-      </Pad>
-      <Pad Id="ClassPad">
-        <State name="__root__">
           <Node name="e.l.f. Beauty" expanded="True">
-            <Node name="e.l.f. Beauty" expanded="True">
-              <Node name="CitySorter" selected="True" />
+            <Node name="e.l.f. Beauty" expanded="True" selected="True">
+              <Node name="AutoMapper" expanded="True" />
+              <Node name="Controllers" expanded="True" />
+              <Node name="e.l.f-brewery-api" expanded="True" />
+              <Node name="Models" expanded="True" />
+              <Node name="Repository" expanded="True" />
+              <Node name="Validator" expanded="True" />
+              <Node name="appsettings.json" expanded="True" />
+            </Node>
+            <Node name="e.l.f. Beauty.Tests" expanded="True">
+              <Node name="Controller" expanded="True" />
             </Node>
           </Node>
         </State>
       </Pad>
-      <Pad Id="ProjectPad">
-        <State name="__root__">
-          <Node name="e.l.f. Beauty">
-            <Node name="e.l.f. Beauty">
-              <Node name="Services" expanded="True" />
-              <Node name="appsettings.json" expanded="True">
-                <Node name="appsettings.Development.json" selected="True" />
-              </Node>
-            </Node>
-          </Node>
-        </State>
-      </Pad>
-      <Pad Id="ClassPad">
-        <State name="__root__">
-          <Node name="e.l.f. Beauty" expanded="True">
-            <Node name="e.l.f. Beauty" expanded="True">
-              <Node name="CitySorter" selected="True" />
-            </Node>
-          </Node>
+      <Pad Id="MonoDevelop.Debugger.WatchPad">
+        <State>
+          <Value>builder.Configuration.GetSection("Jwt")</Value>
+          <Value>json</Value>
         </State>
       </Pad>
     </Pads>
@@ -56,8 +63,23 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MultiItemStartupConfigurations />
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <Breakpoint file="/Users/ra20557683/Projects/e.l.f-brewery-api/e.l.f. Beauty/Program.cs" relfile="e.l.f. Beauty/Program.cs" line="11" column="1" />
-    <Breakpoint file="/Users/ra20557683/Projects/e.l.f-brewery-api/e.l.f. Beauty/Program.cs" relfile="e.l.f. Beauty/Program.cs" line="64" column="1" />
+    <BreakpointStore>
+      <Breakpoint file="/Users/ra20557683/Projects/e.l.f-brewery-api/e.l.f. Beauty/Program.cs" relfile="e.l.f. Beauty/Program.cs" line="11" column="1" />
+      <Breakpoint file="/Users/ra20557683/Projects/e.l.f-brewery-api/e.l.f. Beauty/Controllers/BreweriesControllerV2.cs" relfile="e.l.f. Beauty/Controllers/BreweriesControllerV2.cs" line="29" column="1" />
+      <Breakpoint file="/Users/ra20557683/Projects/e.l.f-brewery-api/e.l.f. Beauty/Repository/BreweryRepository.cs" relfile="e.l.f. Beauty/Repository/BreweryRepository.cs" line="24" column="1" />
+      <Breakpoint file="/Users/ra20557683/Projects/e.l.f-brewery-api/e.l.f. Beauty/Models/Brewery.cs" relfile="e.l.f. Beauty/Models/Brewery.cs" line="24" column="1" />
+      <Breakpoint file="/Users/ra20557683/Projects/e.l.f-brewery-api/e.l.f. Beauty/Models/Brewery.cs" relfile="e.l.f. Beauty/Models/Brewery.cs" line="36" column="1" />
+      <Breakpoint file="/Users/ra20557683/Projects/e.l.f-brewery-api/e.l.f. Beauty/Controllers/BreweriesController.cs" relfile="e.l.f. Beauty/Controllers/BreweriesController.cs" line="61" column="1" />
+      <Breakpoint file="/Users/ra20557683/Projects/e.l.f-brewery-api/e.l.f. Beauty/Repository/BreweryRepository.cs" relfile="e.l.f. Beauty/Repository/BreweryRepository.cs" line="36" column="1" />
+      <Breakpoint file="/Users/ra20557683/Projects/e.l.f-brewery-api/e.l.f. Beauty/Controllers/BreweriesController.cs" relfile="e.l.f. Beauty/Controllers/BreweriesController.cs" line="62" column="1" />
+      <Breakpoint file="/Users/ra20557683/Projects/e.l.f-brewery-api/e.l.f. Beauty/Repository/EFCoreBreweryRepository.cs" relfile="e.l.f. Beauty/Repository/EFCoreBreweryRepository.cs" line="25" column="1" />
+      <Breakpoint file="/Users/ra20557683/Projects/e.l.f-brewery-api/e.l.f. Beauty/Repository/InMemoryBreweryRepository.cs" relfile="e.l.f. Beauty/Repository/InMemoryBreweryRepository.cs" line="38" column="1" />
+      <Breakpoint file="/Users/ra20557683/Projects/e.l.f-brewery-api/e.l.f. Beauty/Services/BreweryService.cs" relfile="e.l.f. Beauty/Services/BreweryService.cs" line="38" column="1" />
+      <Breakpoint file="/Users/ra20557683/Projects/e.l.f-brewery-api/e.l.f. Beauty/Controllers/BreweriesController.cs" relfile="e.l.f. Beauty/Controllers/BreweriesController.cs" line="32" column="1" />
+      <Breakpoint file="/Users/ra20557683/Projects/e.l.f-brewery-api/e.l.f. Beauty/Services/Sorting/NameSorter.cs" relfile="e.l.f. Beauty/Services/Sorting/NameSorter.cs" line="11" column="1" />
+      <Breakpoint file="/Users/ra20557683/Projects/e.l.f-brewery-api/e.l.f. Beauty/Services/BreweryService.cs" relfile="e.l.f. Beauty/Services/BreweryService.cs" line="67" column="1" />
+      <Breakpoint file="/Users/ra20557683/Projects/e.l.f-brewery-api/e.l.f. Beauty/Repository/BreweryRepository.cs" relfile="e.l.f. Beauty/Repository/BreweryRepository.cs" line="62" column="1" />
+    </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.ItemProperties.e.l.f._220Beauty PreferredExecutionTarget="/Applications/Google Chrome.app" />
 </Properties>

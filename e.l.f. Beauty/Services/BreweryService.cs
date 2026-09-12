@@ -53,7 +53,7 @@ namespace e.l.f._Beauty.Services
                 throw;
             }
         }
-        public Task<IEnumerable<Brewery>> AutocompleteAsync(string query)
+        public async Task<IEnumerable<Brewery>> SearchBreweriesAsync(string query)
         {
             //For Internal Demo - Start
             //simulate External API call
@@ -64,14 +64,13 @@ namespace e.l.f._Beauty.Services
             //};
             //For Internal Demo - End
             // Fetch from repository or external API
-            var externalResults = _repository.SearchBreweriesAsync(query);
+            var externalResults = await _repository.SearchBreweriesAsync(query);
                     // Map external → internal
-                    var mappedResults = _mapper.Map<IEnumerable<BreweryResponse>>(externalResults);
+                    var mappedResults = _mapper.Map<IEnumerable<Brewery>>(externalResults);
 
-            return Task.FromResult((IEnumerable<Brewery>)mappedResults.Where(b =>
-                    !string.IsNullOrEmpty(b.Name) &&
-                    b.Name.StartsWith(query, StringComparison.OrdinalIgnoreCase))
-                );
+            return mappedResults.Where(b =>
+            !string.IsNullOrEmpty(b.Name) &&
+            b.Name.StartsWith(query, StringComparison.OrdinalIgnoreCase));
 
             //return await _repository.SearchBreweriesAsync(query);
         }
@@ -175,6 +174,16 @@ namespace e.l.f._Beauty.Services
             return 6371 * c; // Earth radius in km
         }
 
+        public async Task<IEnumerable<Brewery>> AutocompleteAsync(string query)
+        {
+            var breweries = await _repository.GetBreweriesAsync();
+
+            var results = breweries
+                .Where(b => !string.IsNullOrEmpty(b.Name) &&
+                            b.Name.StartsWith(query, StringComparison.OrdinalIgnoreCase));
+
+            return results;
+        }
         
     }
 

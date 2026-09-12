@@ -15,7 +15,7 @@ namespace e.l.f._Beauty.Controllers
     [ApiVersion("2.0")]
     [Route("api/v{version:apiVersion}/breweries")]
     [ApiExplorerSettings(GroupName = "v2")]
-    [Authorize]
+    //[Authorize]
     public class BreweriesControllerV2 : ControllerBase
     {
         private readonly IBreweryService _service;

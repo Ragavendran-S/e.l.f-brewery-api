@@ -57,6 +57,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddAutoMapper(typeof(BreweryProfile));
 
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
@@ -65,15 +66,20 @@ builder.Services.AddOptions<JwtOptions>()
     .Bind(builder.Configuration.GetSection("Jwt"))
     .Validate(options => !string.IsNullOrEmpty(options.Key), "JWT Key must be provided")
     .ValidateOnStart();
-//Enable this line for SQLlite
-//builder.Services.AddDbContext<BreweryDbContext>(options =>
-//    options.UseSqlite("Data Source=brewery.db"));
+// Register DbContext with SQLite
+builder.Services.AddDbContext<BreweryDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 // Add services to the container.
 builder.Services.AddScoped<TokenValidator>();
 builder.Services.AddControllers();
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient<IBreweryRepository, BreweryRepository>();
 builder.Services.AddScoped<IBreweryService, BreweryService>();
+builder.Services.AddScoped<IBreweryFilter, BreweryFilter>();
+builder.Services.AddScoped<IBrewerySorterFactory, BrewerySorterFactory>();
+builder.Services.AddScoped<IBrewerySorter, NameSorter>();
+builder.Services.AddScoped<IBrewerySorter, CitySorter>();
+builder.Services.AddScoped<IPagingHelper, PagingHelper>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 //builder.Services.AddSwaggerGen();

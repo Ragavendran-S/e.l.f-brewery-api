@@ -7,5 +7,7 @@ namespace e.l.f._Beauty.Services
     {
         Task <PagedResult<Brewery>> GetBreweriesAsync(BreweryQueryOptions options);
         Task<IEnumerable<Brewery>> AutocompleteAsync(string query);
+        Task<IEnumerable<Brewery>> SearchBreweriesAsync(string query);
+        
     }
 }

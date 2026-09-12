@@ -16,13 +16,14 @@ namespace e.l.f._Beauty.Controllers
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/Breweries")]
     [ApiExplorerSettings(GroupName = "v1")]
-    [Authorize]
+    //[Authorize]
     public class BreweriesController : ControllerBase
     {
         private readonly IBreweryService _service;
         private readonly ILogger<BreweryService> _logger;
-        
-        public BreweriesController(IBreweryService service, ILogger<BreweryService> logger) { _service = service; _logger = logger; }
+        private readonly IBreweryRepository _repository;
+
+        public BreweriesController(IBreweryService service, ILogger<BreweryService> logger,IBreweryRepository repository) { _service = service; _logger = logger;_repository = repository; }
 
         [HttpGet]
         //[Authorize]
@@ -40,7 +41,7 @@ namespace e.l.f._Beauty.Controllers
                 if (string.IsNullOrWhiteSpace(query))
                     return BadRequest("Query cannot be empty.");
 
-                var suggestions = await _service.AutocompleteAsync(query);
+                var suggestions = await _service.SearchBreweriesAsync(query);
                 if (!suggestions.Any())
                     return NotFound("No breweries found.");
                 return Ok(suggestions);
@@ -53,6 +54,20 @@ namespace e.l.f._Beauty.Controllers
 
             }
             
+        }
+        [HttpGet("{Name}")]
+        public async Task<IActionResult> GetBrewery(string name)
+        {
+            var brewery = await _repository.GetBreweryByNameAsync(name);
+            if (brewery == null) return NotFound();
+            return Ok(brewery);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddBrewery(Brewery brewery)
+        {
+            await _repository.AddBreweryAsync(brewery);
+            return CreatedAtAction(nameof(GetBrewery), new { id = brewery.Id }, brewery);
         }
 
     }

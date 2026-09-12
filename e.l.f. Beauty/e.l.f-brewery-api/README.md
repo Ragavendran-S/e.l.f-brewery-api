@@ -50,7 +50,7 @@ git clone https://github.com/your-org/your-repo.git
 cd your-repo
 dotnet restore
 dotnet run
-```
+
 Swagger UI: `http://localhost:7008/swagger`
 
 ---
@@ -58,42 +58,70 @@ Swagger UI: `http://localhost:7008/swagger`
 ## Configuration and Secrets
 
 ### appsettings.json (example)
-```json
-"Jwt": {
-  "Key": "GLEGP2YPK7Dpup+35RatogjSGfyg7o61puVLgv3cX/I=",
-  "Issuer": "brewery-api",
-  "Audience": "brewery-api"
-}
-```
+appsettings.json contains logging and JWT settings.
 
-- `Jwt:Key` must be Base64.  
+JWT expiry is 30 minutes (hardcoded).
+
+Secrets should be stored via user‑secrets or environment variables.
+
+- 'Jwt:Key' must be Base64.  
 - Never commit production secrets. Use environment variables or `dotnet user-secrets`.  
 
 ### Local Secrets Setup
-```bash
+Bash
 dotnet user-secrets init
 dotnet user-secrets set "Jwt:Key" "$(openssl rand -base64 32)"
 dotnet user-secrets set "Jwt:Issuer" "brewery-api"
 dotnet user-secrets set "Jwt:Audience" "brewery-api"
-```
 
-Verify:
-```bash
+Verify:B
+ash
 dotnet user-secrets list
-```
 
 ---
+### Token Generation
+Use the below api to generate the token
+POST /api/auth/token
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "password": "P@ssw0rd!"
+}
+Response
+=========
+{
+  "token": "<JWT_TOKEN>",
+  "expiresIn": 1800
+}
+
+### Example Requests
+Using curl:
+
+bash
+curl -X GET "https://localhost:5001/api/breweries" \
+  -H "Authorization: Bearer <JWT_TOKEN>"
+Using Postman:
+
+Add Authorization header → Bearer <JWT_TOKEN>.
+
+Test endpoints like /api/breweries, /api/breweries/{id}.
 
 ## Authentication and Token Flow
 - `POST /api/auth/login` → issues JWT.  
 - `POST /api/auth/validate` → manual token validation.  
 - Middleware configured with `AddJwtBearer` and `TokenValidationParameters`.  
 - Pipeline requires:
-```csharp
+csharp
 app.UseAuthentication();
 app.UseAuthorization();
-```
 
+### Authorization Notes
+Protected endpoints: /api/breweries/*, /api/orders/*.
+
+Unprotected endpoints: /api/health, /api/docs.
+
+Token expiry: 30 minutes. Refresh requires re‑authentication.
 ---
 
 ## Logging, Caching, and Versioning
