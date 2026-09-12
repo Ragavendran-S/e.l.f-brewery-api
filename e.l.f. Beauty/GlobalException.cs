@@ -2,42 +2,44 @@
 using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Text.Json;
-
-public class GlobalExceptionMiddleware
+namespace e.l.f._Beauty.GlobalException
 {
-    private readonly RequestDelegate _next;
-    private readonly ILogger<GlobalExceptionMiddleware> _logger;
-
-    public GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExceptionMiddleware> logger)
+    public class GlobalExceptionMiddleware
     {
-        _next = next;
-        _logger = logger;
-    }
+        private readonly RequestDelegate _next;
+        private readonly ILogger<GlobalExceptionMiddleware> _logger;
 
-    public async Task InvokeAsync(HttpContext context)
-    {
-        try
+        public GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExceptionMiddleware> logger)
         {
-            // Continue pipeline
-            await _next(context);
+            _next = next;
+            _logger = logger;
         }
-        catch (Exception ex)
+
+        public async Task InvokeAsync(HttpContext context)
         {
-            // Log error with stack trace
-            _logger.LogError(ex, "Unhandled exception occurred at {Path}", context.Request.Path);
-
-            // Build standardized error response
-            var errorResponse = new
+            try
             {
-                StatusCode = (int)HttpStatusCode.InternalServerError,
-                Message = "An unexpected error occurred. Please try again later.",
-                Detail = ex.Message // optional: hide in production
-            };
+                // Continue pipeline
+                await _next(context);
+            }
+            catch (Exception ex)
+            {
+                // Log error with stack trace
+                _logger.LogError(ex, "Unhandled exception occurred at {Path}", context.Request.Path);
 
-            context.Response.ContentType = "application/json";
-            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                // Build standardized error response
+                var errorResponse = new
+                {
+                    StatusCode = (int)HttpStatusCode.InternalServerError,
+                    Message = "An unexpected error occurred. Please try again later.",
+                    Detail = ex.Message // optional: hide in production
+                };
 
-            await context.Response.WriteAsync(JsonSerializer.Serialize(errorResponse));
+                context.Response.ContentType = "application/json";
+                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+
+                await context.Response.WriteAsync(JsonSerializer.Serialize(errorResponse));
+            }
         }
     }
 }

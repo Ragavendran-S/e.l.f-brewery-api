@@ -2,25 +2,27 @@
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Swashbuckle.AspNetCore.SwaggerGen;
-
-public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
+namespace e.l.f._Beauty.ConfigureSwaggerOptions
 {
-    private readonly IApiVersionDescriptionProvider _provider;
-
-    public ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider)
+    public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
     {
-        _provider = provider;
-    }
+        private readonly IApiVersionDescriptionProvider _provider;
 
-    public void Configure(SwaggerGenOptions options)
-    {
-        foreach (var description in _provider.ApiVersionDescriptions)
+        public ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider)
         {
-            options.SwaggerDoc(description.GroupName, new OpenApiInfo()
+            _provider = provider;
+        }
+
+        public void Configure(SwaggerGenOptions options)
+        {
+            foreach (var description in _provider.ApiVersionDescriptions)
             {
-                Title = "E.L.F Brewery API",
-                Version = description.ApiVersion.ToString()
-            });
+                options.SwaggerDoc(description.GroupName, new OpenApiInfo()
+                {
+                    Title = "E.L.F Brewery API",
+                    Version = description.ApiVersion.ToString()
+                });
+            }
         }
     }
 }

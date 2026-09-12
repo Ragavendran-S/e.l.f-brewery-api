@@ -14,6 +14,9 @@ using Microsoft.OpenApi.Models;
 using System.Security.Cryptography;
 using System;
 using Microsoft.Extensions.Hosting;
+using e.l.f._Beauty.ConfigureSwaggerOptions;
+using e.l.f._Beauty.GlobalException;
+using e.l.f._Beauty.JwtOptions;
 
 var builder = WebApplication.CreateBuilder(args);
 //var keyBytes = RandomNumberGenerator.GetBytes(32); // 256 bits
@@ -58,7 +61,10 @@ builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
 
-
+builder.Services.AddOptions<JwtOptions>()
+    .Bind(builder.Configuration.GetSection("Jwt"))
+    .Validate(options => !string.IsNullOrEmpty(options.Key), "JWT Key must be provided")
+    .ValidateOnStart();
 //Enable this line for SQLlite
 //builder.Services.AddDbContext<BreweryDbContext>(options =>
 //    options.UseSqlite("Data Source=brewery.db"));

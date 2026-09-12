@@ -14,7 +14,7 @@ namespace e.l.f._Beauty.Repository
             return await _context.Breweries.AsNoTracking().ToListAsync();
         }
 
-        public Task<IEnumerable<Brewery>> SearchBreweriesAsync(string query)
+        public async Task<IEnumerable<Brewery>> SearchBreweriesAsync(string query)
         {
             throw new NotImplementedException();
         }

@@ -55,16 +55,23 @@ namespace e.l.f._Beauty.Services
         }
         public Task<IEnumerable<Brewery>> AutocompleteAsync(string query)
         {
+            //For Internal Demo - Start
             //simulate External API call
-            var externalResults = new List<ExternalBrewery>
-            {
-                new ExternalBrewery { brewery_id = "123", brewery_name = "Lagunitas Brewing Co", location_city = "Petaluma", location_state = "California", location_country = "USA" },
-                new ExternalBrewery { brewery_id = "456", brewery_name = "Lager House", location_city = "Detroit", location_state = "Michigan", location_country = "USA" }
-            };
-            // Map external → internal
-            var mappedResults = _mapper.Map<IEnumerable<BreweryResponse>>(externalResults);
+            //var externalResults = new List<ExternalBrewery>
+            //{
+            //    new ExternalBrewery { brewery_id = "123", brewery_name = "Lagunitas Brewing Co", location_city = "Petaluma", location_state = "California", location_country = "USA" },
+            //    new ExternalBrewery { brewery_id = "456", brewery_name = "Lager House", location_city = "Detroit", location_state = "Michigan", location_country = "USA" }
+            //};
+            //For Internal Demo - End
+            // Fetch from repository or external API
+            var externalResults = _repository.SearchBreweriesAsync(query);
+                    // Map external → internal
+                    var mappedResults = _mapper.Map<IEnumerable<BreweryResponse>>(externalResults);
 
-            return Task.FromResult((IEnumerable<Brewery>)mappedResults.Where(b => b.Name.StartsWith(query, StringComparison.OrdinalIgnoreCase)));
+            return Task.FromResult((IEnumerable<Brewery>)mappedResults.Where(b =>
+                    !string.IsNullOrEmpty(b.Name) &&
+                    b.Name.StartsWith(query, StringComparison.OrdinalIgnoreCase))
+                );
 
             //return await _repository.SearchBreweriesAsync(query);
         }

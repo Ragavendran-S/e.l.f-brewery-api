@@ -1,5 +1,7 @@
-﻿using e.l.f._Beauty.Models;
+﻿using e.l.f._Beauty.JwtOptions;
+using e.l.f._Beauty.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
@@ -13,11 +15,13 @@ public class AuthController : ControllerBase
 {
     private readonly IConfiguration _config;
     private readonly TokenValidator _validator;
+    private readonly JwtOptions _jwtOptions;
 
-    public AuthController(IConfiguration config,TokenValidator validator)
+    public AuthController(IConfiguration config,TokenValidator validator,IOptions<JwtOptions> jwtOptions)
     {
         _config = config;
         _validator = validator;
+        _jwtOptions = jwtOptions.Value;
 
     }
 
@@ -34,11 +38,13 @@ public class AuthController : ControllerBase
             // ✅ Replace with real user validation
             if (model.Username != "admin" || model.Password != "password")
                 return Unauthorized();
-
-        var keyBytes = Convert.FromBase64String(_config["Jwt:Key"]);
-        //IssuerSigningKey = new SymmetricSecurityKey(keyBytes);
-
-        //var securityKey = new SymmetricSecurityKey(keyBytes);
+        var key = _config[_jwtOptions.Key];
+        if (string.IsNullOrEmpty(key))
+        {
+            throw new InvalidOperationException("JWT Key is not configured.");
+        }
+        //var keyBytes = Convert.FromBase64String(_config["Jwt:Key"]);
+        var keyBytes = Encoding.UTF8.GetBytes(key);
         var credentials = new SigningCredentials(new SymmetricSecurityKey(keyBytes), SecurityAlgorithms.HmacSha256);
 
             var claims = new[]
