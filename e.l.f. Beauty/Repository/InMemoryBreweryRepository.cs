@@ -1,19 +1,36 @@
-﻿using System;
-using e.l.f._Beauty.Models;
+﻿using e.l.f._Beauty.Models;
+using Microsoft.Extensions.Caching.Memory;
 
-namespace e.l.f._Beauty.Repository
+public class CachedBreweryRepository : IBreweryRepository
 {
-    public class InMemoryBreweryRepository : IBreweryRepository
+    private readonly IBreweryRepository _inner;
+    private readonly IMemoryCache _cache;
+    private readonly ILogger<CachedBreweryRepository> _logger;
+
+    public CachedBreweryRepository(IBreweryRepository inner, IMemoryCache cache, ILogger<CachedBreweryRepository> logger)
     {
-        private readonly List<Brewery> _breweries;
-        public InMemoryBreweryRepository(List<Brewery> breweries) => _breweries = breweries;
+        _inner = inner;
+        _cache = cache;
+        _logger = logger;
+    }
 
-        public Task<IEnumerable<Brewery>> GetBreweriesAsync() => Task.FromResult(_breweries.AsEnumerable());
-
-        public Task<IEnumerable<Brewery>> SearchBreweriesAsync(string query)
+    public async Task<IEnumerable<Brewery>> GetBreweriesAsync()
+    {
+        return await _cache.GetOrCreateAsync("breweries", async entry =>
         {
-            throw new NotImplementedException();
-        }
+            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
+            _logger.LogInformation("Cache miss for breweries at {Time}", DateTime.UtcNow);
+            return await _inner.GetBreweriesAsync();
+        });
+    }
+
+    public async Task<IEnumerable<Brewery>> SearchBreweriesAsync(string query)
+    {
+        return await _cache.GetOrCreateAsync("Search", async entry =>
+        {
+            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
+            _logger.LogInformation("Cache miss for breweries at {Time}", DateTime.UtcNow);
+            return await _inner.SearchBreweriesAsync(query);
+        });
     }
 }
-

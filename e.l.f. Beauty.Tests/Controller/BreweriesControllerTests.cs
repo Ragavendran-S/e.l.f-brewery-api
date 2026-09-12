@@ -51,8 +51,8 @@ namespace e.l.f._Beauty.Tests.Controllers
             var returned = Assert.IsType<PagedResult<Brewery>>(okResult.Value);
 
             // Assert on the items collection (always present)
-            Assert.NotNull(returned.items);
-            Assert.Equal(2, returned.items.Count());
+            Assert.NotNull(returned.Items);
+            Assert.Equal(2, returned.Items.Count());
 
             // If your PagedResult exposes a page or pageSize, you can assert those too:
             // Assert.Equal(1, returned.Page);

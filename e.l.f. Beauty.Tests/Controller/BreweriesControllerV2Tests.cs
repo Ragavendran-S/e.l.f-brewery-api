@@ -52,10 +52,10 @@ namespace e.l.f._Beauty.Tests.Controllers
 
             // The returned value should be the same PagedResult<Brewery> instance (or equivalent)
             var returned = Assert.IsType<PagedResult<Brewery>>(okResult.Value);
-            Assert.NotNull(returned.items);
-            Assert.Equal(2, returned.items.Count());
-            Assert.Contains(returned.items, b => b.Name == "Alpha Brewery");
-            Assert.Contains(returned.items, b => b.Name == "Beta Brewery");
+            Assert.NotNull(returned.Items);
+            Assert.Equal(2, returned.Items.Count());
+            Assert.Contains(returned.Items, b => b.Name == "Alpha Brewery");
+            Assert.Contains(returned.Items, b => b.Name == "Beta Brewery");
         }
 
         [Fact]

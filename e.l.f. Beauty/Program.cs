@@ -53,8 +53,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-//builder.Services.AddAuthorization();
-Console.WriteLine($"JWT Key length: {builder.Configuration["Jwt:Key"].Length}");
+builder.Services.AddAutoMapper(typeof(Program));
 
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();

@@ -41,6 +41,8 @@ namespace e.l.f._Beauty.Controllers
                     return BadRequest("Query cannot be empty.");
 
                 var suggestions = await _service.AutocompleteAsync(query);
+                if (!suggestions.Any())
+                    return NotFound("No breweries found.");
                 return Ok(suggestions);
 
             }

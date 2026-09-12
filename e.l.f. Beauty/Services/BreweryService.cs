@@ -1,4 +1,5 @@
 ﻿using System;
+using AutoMapper;
 using e.l.f._Beauty.Models;
 using e.l.f._Beauty.Repository;
 using Microsoft.EntityFrameworkCore;
@@ -12,99 +13,137 @@ namespace e.l.f._Beauty.Services
         private readonly IBreweryRepository _repository;
         private readonly IMemoryCache _cache;
         private readonly ILogger<BreweryService> _logger;
+        private readonly IMapper _mapper;
+        private readonly IBreweryFilter _filter;
+        private readonly IBrewerySorterFactory _sorterFactory;
+        private readonly IPagingHelper _paging;
 
-        public BreweryService(IBreweryRepository repository, IMemoryCache cache, ILogger<BreweryService> logger)
+        public BreweryService(IBreweryRepository repository, IMemoryCache cache, ILogger<BreweryService> logger,IMapper mapper,IBreweryFilter filter, IBrewerySorterFactory sorterFactory, IPagingHelper paging)
         {
             _repository = repository;
             _cache = cache;
             _logger = logger;
+            _mapper = mapper;
+            _filter = filter;
+            _sorterFactory = sorterFactory;
+            _paging = paging;
         }
 
-        //public BreweryService(IBreweryRepository repository, IMemoryCache cache)
-        //{
-        //    _repository = repository;
-        //    _cache = cache;
-        //}
-        public async Task<IEnumerable<Brewery>> AutocompleteAsync(string query)
-        {
-            return await _repository.SearchBreweriesAsync(query);
-        }
         public async Task<PagedResult<Brewery>> GetBreweriesAsync(BreweryQueryOptions options)
         {
             try
             {
-                // Cache key can be dynamic if you want per-query caching
-                var cacheKey = "breweries";
+                var breweries = await _cache.GetOrFetchAsync("breweries", () => _repository.GetBreweriesAsync());
 
-                // Try to get breweries from cache
-                var breweries = await _cache.GetOrCreateAsync(cacheKey, async entry =>
-                {
-                    // Set cache expiration to 10 minutes
-                    entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
+                breweries = _filter.Apply(breweries, options);
 
-                    _logger.LogInformation("Cache miss for {CacheKey}. Fetching breweries from repository at {Time}.", cacheKey, DateTime.UtcNow);
+                var sorter = _sorterFactory.GetSorter(options.SortBy);
+                breweries = sorter.Sort(breweries, options);
 
-                    return await _repository.GetBreweriesAsync();
+                var result = _paging.Apply(breweries, options);
 
-                });
+                _logger.LogInformation("Returning {Count} items out of {Total} total for Page {Page} with PageSize {PageSize}.",
+                    result.Items.Count, result.TotalItems, result.Page, result.PageSize);
 
-                // Materialize to list
-                breweries = breweries.ToList();
-
-                // Search filter
-                
-                    if (!string.IsNullOrEmpty(options.Search))
-                    {
-                        _logger.LogInformation("Applying search filter: {Search}", options.Search);
-
-                        breweries = breweries
-                            .Where(b => b.Name != null &&
-                                        b.Name.Contains(options.Search, StringComparison.OrdinalIgnoreCase))
-                            .ToList();
-                    }
-                    // City filter
-                    if (!string.IsNullOrEmpty(options.City))
-                    {
-                        _logger.LogInformation("Filtering by city: {City}", options.City);
-
-                        breweries = breweries
-                            .Where(b => b.City != null &&
-                                        b.City.Equals(options.City, StringComparison.OrdinalIgnoreCase))
-                            .ToList();
-                    }
-                    // Sorting
-                    _logger.LogInformation("Sorting by {SortBy}, Ascending: {Ascending}", options.SortBy, options.Ascending);
-
-                    breweries = options.SortBy switch
-                    {
-                        "City" => options.Ascending
-                            ? breweries.OrderBy(b => b.City ?? string.Empty).ToList()
-                            : breweries.OrderByDescending(b => b.City ?? string.Empty).ToList(),
-
-                        "Distance" => SortByDistance(breweries, options).ToList(),
-
-                        _ => options.Ascending
-                            ? breweries.OrderBy(b => b.Name ?? string.Empty).ToList()
-                            : breweries.OrderByDescending(b => b.Name ?? string.Empty).ToList()
-                    };
-                    // Paging
-                    var totalItems = breweries.Count();
-                    var items = breweries
-                        .Skip((options.Page - 1) * options.PageSize)
-                        .Take(options.PageSize)
-                        .ToList();
-
-                    _logger.LogInformation("Returning {Count} items out of {Total} total for Page {Page} with PageSize {PageSize}.",
-                        items.Count, totalItems, options.Page, options.PageSize);
-                    return new PagedResult<Brewery>(items, totalItems, options.Page, options.PageSize);
-                
+                return result;
             }
             catch (HttpRequestException ex)
             {
                 _logger.LogWarning(ex, "Error fetching breweries from external API.");
-                throw; // bubble up to global handler
+                throw;
             }
         }
+        public Task<IEnumerable<Brewery>> AutocompleteAsync(string query)
+        {
+            //simulate External API call
+            var externalResults = new List<ExternalBrewery>
+            {
+                new ExternalBrewery { brewery_id = "123", brewery_name = "Lagunitas Brewing Co", location_city = "Petaluma", location_state = "California", location_country = "USA" },
+                new ExternalBrewery { brewery_id = "456", brewery_name = "Lager House", location_city = "Detroit", location_state = "Michigan", location_country = "USA" }
+            };
+            // Map external → internal
+            var mappedResults = _mapper.Map<IEnumerable<BreweryResponse>>(externalResults);
+
+            return Task.FromResult((IEnumerable<Brewery>)mappedResults.Where(b => b.Name.StartsWith(query, StringComparison.OrdinalIgnoreCase)));
+
+            //return await _repository.SearchBreweriesAsync(query);
+        }
+        //public async Task<PagedResult<Brewery>> GetBreweriesAsync(BreweryQueryOptions options)
+        //{
+        //    try
+        //    {
+        //        // Cache key can be dynamic if you want per-query caching
+        //        var cacheKey = "breweries";
+
+        //        // Try to get breweries from cache
+        //        var breweries = await _cache.GetOrCreateAsync(cacheKey, async entry =>
+        //        {
+        //            // Set cache expiration to 10 minutes
+        //            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
+
+        //            _logger.LogInformation("Cache miss for {CacheKey}. Fetching breweries from repository at {Time}.", cacheKey, DateTime.UtcNow);
+
+        //            return await _repository.GetBreweriesAsync();
+
+        //        });
+
+        //        // Materialize to list
+        //        breweries = breweries.ToList();
+
+        //        // Search filter
+                
+        //            if (!string.IsNullOrEmpty(options.Search))
+        //            {
+        //                _logger.LogInformation("Applying search filter: {Search}", options.Search);
+
+        //                breweries = breweries
+        //                    .Where(b => b.Name != null &&
+        //                                b.Name.Contains(options.Search, StringComparison.OrdinalIgnoreCase))
+        //                    .ToList();
+        //            }
+        //            // City filter
+        //            if (!string.IsNullOrEmpty(options.City))
+        //            {
+        //                _logger.LogInformation("Filtering by city: {City}", options.City);
+
+        //                breweries = breweries
+        //                    .Where(b => b.City != null &&
+        //                                b.City.Equals(options.City, StringComparison.OrdinalIgnoreCase))
+        //                    .ToList();
+        //            }
+        //            // Sorting
+        //            _logger.LogInformation("Sorting by {SortBy}, Ascending: {Ascending}", options.SortBy, options.Ascending);
+
+        //            breweries = options.SortBy switch
+        //            {
+        //                "City" => options.Ascending
+        //                    ? breweries.OrderBy(b => b.City ?? string.Empty).ToList()
+        //                    : breweries.OrderByDescending(b => b.City ?? string.Empty).ToList(),
+
+        //                "Distance" => SortByDistance(breweries, options).ToList(),
+
+        //                _ => options.Ascending
+        //                    ? breweries.OrderBy(b => b.Name ?? string.Empty).ToList()
+        //                    : breweries.OrderByDescending(b => b.Name ?? string.Empty).ToList()
+        //            };
+        //            // Paging
+        //            var totalItems = breweries.Count();
+        //            var items = breweries
+        //                .Skip((options.Page - 1) * options.PageSize)
+        //                .Take(options.PageSize)
+        //                .ToList();
+
+        //            _logger.LogInformation("Returning {Count} items out of {Total} total for Page {Page} with PageSize {PageSize}.",
+        //                items.Count, totalItems, options.Page, options.PageSize);
+        //            return new PagedResult<Brewery>(items, totalItems, options.Page, options.PageSize);
+                
+        //    }
+        //    catch (HttpRequestException ex)
+        //    {
+        //        _logger.LogWarning(ex, "Error fetching breweries from external API.");
+        //        throw; // bubble up to global handler
+        //    }
+        //}
 
 
 
