@@ -62,7 +62,7 @@ builder.Services.AddAutoMapper(typeof(BreweryProfile));
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
 
-builder.Services.AddOptions<JwtOptions>()
+builder.Services.AddOptions<JwtOptionsAuth>()
     .Bind(builder.Configuration.GetSection("Jwt"))
     .Validate(options => !string.IsNullOrEmpty(options.Key), "JWT Key must be provided")
     .ValidateOnStart();

@@ -1,6 +1,6 @@
 ﻿namespace e.l.f._Beauty.JwtOptions
 {
-    public class JwtOptions
+    public class JwtOptionsAuth
     {
         public string? Key { get; set; }
         public string? Issuer { get; set; }

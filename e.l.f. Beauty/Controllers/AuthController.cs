@@ -15,9 +15,9 @@ public class AuthController : ControllerBase
 {
     private readonly IConfiguration _config;
     private readonly TokenValidator _validator;
-    private readonly JwtOptions _jwtOptions;
+    private readonly JwtOptionsAuth _jwtOptions;
 
-    public AuthController(IConfiguration config,TokenValidator validator,IOptions<JwtOptions> jwtOptions)
+    public AuthController(IConfiguration config,TokenValidator validator,IOptions<JwtOptionsAuth> jwtOptions)
     {
         _config = config;
         _validator = validator;
