@@ -1,5 +1,3 @@
-# e.l.f-brewery-api
-Creating Repository for e.l.f-brewery-api
 Here’s a fully restructured **README.md** that incorporates all the missing sections you called out — architecture decisions, cache strategy rationale, EF Core/SQLite explanation, JWT/Base64 rationale, and known limitations. It’s written to be clear, professional, and developer‑friendly.
 
 ---
