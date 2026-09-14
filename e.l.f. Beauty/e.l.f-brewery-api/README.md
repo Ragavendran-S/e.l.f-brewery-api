@@ -1,7 +1,3 @@
-Here’s a fully restructured **README.md** that incorporates all the missing sections you called out — architecture decisions, cache strategy rationale, EF Core/SQLite explanation, JWT/Base64 rationale, and known limitations. It’s written to be clear, professional, and developer‑friendly.
-
----
-
 # Brewery API
 
 ## Overview
@@ -94,16 +90,9 @@ Response
   "token": "<JWT_TOKEN>",
   "expiresIn": 1800
 }
-###Perfect — let’s add a **clear, step‑by‑step EF Core migrations section** to your project’s README so anyone on your team can reliably initialize and update the database.  
+
 
 ---
-
-## 📌 Where to Add in README
-Place this section **after your “Setup Instructions”** and before “Running the API.” That way, developers see it right after cloning and restoring packages, ensuring they don’t miss DB initialization.
-
----
-
-## 📌 README Section: Database Initialization & Migrations
 
 ```markdown
 ## Database Initialization & Migrations
