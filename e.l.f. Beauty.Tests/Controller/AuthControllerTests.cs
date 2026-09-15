@@ -102,8 +102,9 @@ namespace e.l.f._Beauty.Tests.Controllers
 
             var principal = handler.ValidateToken(tokenString, validationParameters, out var validatedToken);
             Assert.NotNull(principal);
-            Assert.Equal("admin", principal.FindFirst(ClaimTypes.Name)?.Value);
-            Assert.Equal("User", principal.FindFirst(ClaimTypes.Role)?.Value);
+            // principal is asserted not null above; use the null-forgiving operator so the analyzer knows it's non-null here
+            Assert.Equal("admin", principal!.FindFirst(ClaimTypes.Name)?.Value);
+            Assert.Equal("User", principal!.FindFirst(ClaimTypes.Role)?.Value);
         }
 
         [Fact]
