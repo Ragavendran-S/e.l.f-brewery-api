@@ -72,7 +72,7 @@ namespace e.l.f._Beauty.Tests.Controllers
             };
 
             _serviceMock
-                .Setup(s => s.AutocompleteAsync("lag"))
+                .Setup(s => s.SearchBreweriesAsync("lag"))
                 .ReturnsAsync(expected);
 
             // Act
@@ -103,7 +103,7 @@ namespace e.l.f._Beauty.Tests.Controllers
         {
             // Arrange
             _serviceMock
-                .Setup(s => s.AutocompleteAsync("lag"))
+                .Setup(s => s.SearchBreweriesAsync("lag"))
                 .ThrowsAsync(new HttpRequestException("External API down"));
 
             // Act
