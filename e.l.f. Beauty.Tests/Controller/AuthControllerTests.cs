@@ -129,6 +129,7 @@ namespace e.l.f._Beauty.Tests.Controllers
             var loginResult = controller.Login(new LoginModel { Username = "admin", Password = "password" }) as OkObjectResult;
             if (loginResult == null) Assert.True(false, "Login did not return OkObjectResult");
 
+            if (loginResult.Value == null) Assert.True(false, "Login returned OkObjectResult with null Value");
             var tokenProperty = loginResult.Value.GetType().GetProperty("token");
             if (tokenProperty == null) Assert.True(false, "token property missing");
             var tokenValue = tokenProperty.GetValue(loginResult.Value);
