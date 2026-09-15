@@ -2,10 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <RootNamespace>e.l.f._Beauty.Tests</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-
+	  <NoWarn>$(NoWarn);ALL</NoWarn>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
@@ -26,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\e.l.f. Beauty\e.l.f. Beauty.csproj" />
+    <ProjectReference Include="..\..\..\..\..\..\Downloads\e.l.f-brewery-api-Feature-e.l.f-Brewery-API\e.l.f-brewery-api-Feature-e.l.f-Brewery-API\e.l.f. Beauty\e.l.f. Beauty.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Controller\" />

@@ -1,13 +1,17 @@
-﻿using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
+﻿using Castle.Core.Logging;
 using e.l.f._Beauty; // adjust namespace if your API assembly uses a different root namespace
 using e.l.f._Beauty.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Moq;
 using Microsoft.IdentityModel.Tokens;
+using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using Xunit;
 
 namespace e.l.f._Beauty.Tests.Controllers
@@ -16,6 +20,8 @@ namespace e.l.f._Beauty.Tests.Controllers
     {
         private readonly IConfiguration _config;
         private readonly TokenValidator _validator;
+        private readonly ILogger<TokenValidator> _logger;
+        private readonly IOptions<e.l.f._Beauty.JwtOptions.JwtOptionsAuth> _jwtOptions;
 
         public AuthControllerTests()
         {
@@ -35,15 +41,25 @@ namespace e.l.f._Beauty.Tests.Controllers
                 .Build();
 
             // TokenValidator is the concrete validator used by the controller.
-            // It must have a constructor that accepts IConfiguration (as in your controller).
-            _validator = new TokenValidator(_config);
+            // It must have a constructor that accepts IConfiguration and ILogger<TokenValidator>.
+            _logger = new Mock<ILogger<TokenValidator>>().Object;
+            _validator = new TokenValidator(_config, _logger);
+
+            // Build IOptions<JwtOptionsAuth> where the Key/Issuer/Audience point to configuration keys
+            var jwtOptions = new e.l.f._Beauty.JwtOptions.JwtOptionsAuth
+            {
+                Key = "Jwt:Key",
+                Issuer = "Jwt:Issuer",
+                Audience = "Jwt:Audience"
+            };
+            _jwtOptions = Options.Create(jwtOptions);
         }
 
         [Fact]
         public void Login_WithValidCredentials_ReturnsOkAndValidJwt()
         {
             // Arrange
-            var controller = new AuthController(_config, _validator);
+            var controller = new AuthController(_config, _validator, _jwtOptions);
             var model = new LoginModel { Username = "admin", Password = "password" };
 
             // Act
@@ -55,13 +71,24 @@ namespace e.l.f._Beauty.Tests.Controllers
 
             // Extract token string from anonymous object { token = "..." }
             var tokenProperty = okResult.Value.GetType().GetProperty("token");
-            Assert.NotNull(tokenProperty);
-            var tokenString = tokenProperty!.GetValue(okResult.Value) as string;
-            Assert.False(string.IsNullOrWhiteSpace(tokenString));
+            if (tokenProperty == null) Assert.True(false, "token property missing");
+            var tokenValue = tokenProperty.GetValue(okResult.Value);
+            string tokenString;
+            if (tokenValue is string ts)
+            {
+                tokenString = ts;
+            }
+            else
+            {
+                Assert.True(false, "token value is missing or not a string");
+                tokenString = string.Empty; // satisfy definite assignment for compiler
+            }
 
             // Validate token using the same key/issuer/audience from configuration
             var handler = new JwtSecurityTokenHandler();
-            var keyBytes = Convert.FromBase64String(_config["Jwt:Key"]!);
+            var keyConfig = _config["Jwt:Key"];
+            if (string.IsNullOrEmpty(keyConfig)) Assert.True(false, "Jwt:Key is not configured");
+            var keyBytes = Convert.FromBase64String(keyConfig);
             var validationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
@@ -83,7 +110,7 @@ namespace e.l.f._Beauty.Tests.Controllers
         public void Login_WithInvalidCredentials_ReturnsUnauthorized()
         {
             // Arrange
-            var controller = new AuthController(_config, _validator);
+            var controller = new AuthController(_config, _validator, _jwtOptions);
             var model = new LoginModel { Username = "bad", Password = "creds" };
 
             // Act
@@ -97,17 +124,26 @@ namespace e.l.f._Beauty.Tests.Controllers
         public void ValidateToken_WithValidToken_ReturnsOk()
         {
             // Arrange: obtain a token by calling Login
-            var controller = new AuthController(_config, _validator);
+            var controller = new AuthController(_config, _validator, _jwtOptions);
             var loginResult = controller.Login(new LoginModel { Username = "admin", Password = "password" }) as OkObjectResult;
-            Assert.NotNull(loginResult);
+            if (loginResult == null) Assert.True(false, "Login did not return OkObjectResult");
 
-            var tokenProperty = loginResult!.Value.GetType().GetProperty("token");
-            Assert.NotNull(tokenProperty);
-            var tokenString = tokenProperty!.GetValue(loginResult.Value) as string;
-            Assert.False(string.IsNullOrWhiteSpace(tokenString));
+            var tokenProperty = loginResult.Value.GetType().GetProperty("token");
+            if (tokenProperty == null) Assert.True(false, "token property missing");
+            var tokenValue = tokenProperty.GetValue(loginResult.Value);
+            string tokenString;
+            if (tokenValue is string ts)
+            {
+                tokenString = ts;
+            }
+            else
+            {
+                Assert.True(false, "token value is missing or not a string");
+                tokenString = string.Empty;
+            }
 
             // Act: call ValidateToken endpoint
-            var validateResult = controller.ValidateToken(tokenString!);
+            var validateResult = controller.ValidateToken(tokenString);
 
             // Assert
             var ok = Assert.IsType<OkObjectResult>(validateResult);
@@ -118,7 +154,7 @@ namespace e.l.f._Beauty.Tests.Controllers
         public void ValidateToken_WithInvalidToken_ReturnsOkAndLogsError()
         {
             // Arrange
-            var controller = new AuthController(_config, _validator);
+            var controller = new AuthController(_config, _validator, _jwtOptions);
             var invalidToken = "this-is-not-a-jwt";
 
             // Act

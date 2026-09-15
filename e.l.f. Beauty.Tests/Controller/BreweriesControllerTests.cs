@@ -17,12 +17,14 @@ namespace e.l.f._Beauty.Tests.Controllers
         private readonly Mock<IBreweryService> _serviceMock;
         private readonly Mock<ILogger<BreweryService>> _loggerMock;
         private readonly BreweriesController _controller;
+        private readonly Mock<IBreweryRepository> _repository;
 
         public BreweriesControllerTests()
         {
             _serviceMock = new Mock<IBreweryService>();
             _loggerMock = new Mock<ILogger<BreweryService>>();
-            _controller = new BreweriesController(_serviceMock.Object, _loggerMock.Object);
+            _repository=new Mock<IBreweryRepository>();
+            _controller = new BreweriesController(_serviceMock.Object, _loggerMock.Object,_repository.Object);
         }
 
         [Fact]
