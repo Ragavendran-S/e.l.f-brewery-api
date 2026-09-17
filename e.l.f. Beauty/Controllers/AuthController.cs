@@ -4,6 +4,7 @@ using e.l.f._Beauty.Models;
 using e.l.f.GlobalException;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
@@ -39,6 +40,7 @@ namespace e.l.f._Beauty
             }
         }
 
+        [ActivatorUtilitiesConstructor]
         public AuthController(IConfiguration config,TokenValidator validator,IOptions<JwtOptionsAuth> jwtOptions)
         {
             _config = config;
