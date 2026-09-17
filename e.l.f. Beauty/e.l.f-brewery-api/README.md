@@ -39,7 +39,7 @@ Here’s a fully restructured **README.md** that incorporates all the missing se
 ## Quick Start
 
 ### Prerequisites
-- .NET 7 SDK (or project’s SDK version)  
+- .NET 8 SDK (or project’s SDK version)  
 - Git  
 - Optional: Docker  
 - Postman or curl for testing  

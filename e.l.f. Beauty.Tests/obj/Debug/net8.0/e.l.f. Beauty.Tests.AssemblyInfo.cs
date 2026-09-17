@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("e.l.f. Beauty.Tests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b800989061dfa402c7a20eec8c704332d60e6a61")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+71d78f69054d80ca947627e5c2bcd147ab47f425")]
 [assembly: System.Reflection.AssemblyProductAttribute("e.l.f. Beauty.Tests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("e.l.f. Beauty.Tests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
