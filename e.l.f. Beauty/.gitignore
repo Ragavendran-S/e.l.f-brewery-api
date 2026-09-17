@@ -13,7 +13,6 @@ brewery.db
 *.sln.docstates
 .DS_Store
 
-
 # Rider
 .idea/
 
