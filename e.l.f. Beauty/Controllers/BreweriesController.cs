@@ -1,0 +1,103 @@
+﻿using e.l.f._Beauty.Models;
+using e.l.f._Beauty.Repository;
+using e.l.f._Beauty.Services;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+// For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+
+namespace e.l.f._Beauty.Controllers
+{
+    [ApiController]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/Breweries")]
+    [ApiExplorerSettings(GroupName = "v1")]
+    [Authorize]
+    public class BreweriesController : ControllerBase
+    {
+        private readonly IBreweryService _service;
+        private readonly ILogger<BreweryService> _logger;
+        private readonly IBreweryRepository _repository;
+        private readonly IPagingHelper _pagingHelper;
+        private readonly BreweryDbContext _dbContext;
+        public BreweriesController(IBreweryService service, ILogger<BreweryService> logger,IBreweryRepository repository, BreweryDbContext dbContext, IPagingHelper pagingHelper)
+        { _service = service; _logger = logger;_repository = repository; _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext)); _pagingHelper = pagingHelper ?? throw new ArgumentNullException(nameof(pagingHelper)); }
+
+        // Convenience ctor for unit tests that only need the service and a logger
+        public BreweriesController(IBreweryService service, ILogger<BreweryService> logger)
+        {
+            _service = service ?? throw new ArgumentNullException(nameof(service));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _repository = null!;
+            _dbContext = null!;
+            _pagingHelper = null!;
+        }
+
+        [HttpGet]
+        //[Authorize]
+        public async Task<ActionResult<PagedResult<Brewery>>> GetBreweries([FromQuery] BreweryQueryOptions options)
+        {
+            var result = await _service.GetBreweriesAsync(options);
+            return Ok(result);
+        }
+
+        [HttpGet("breweries")]
+        public async Task<IActionResult> GetBreweries(int page = 1, int pageSize = 10)
+        {
+            var query = _dbContext.Breweries.AsQueryable();
+            var paged = _pagingHelper.ApplyPaging(query, page, pageSize);
+
+            var items = await paged.ToListAsync();
+            return Ok(new PagedResult<Brewery>(items, page, pageSize, _dbContext.Breweries.Count()));
+        }
+
+        [HttpGet("autocomplete")]
+        public async Task<IActionResult> Autocomplete([FromQuery] string query)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(query))
+                    return BadRequest("Query cannot be empty.");
+
+                var results = await _service.AutocompleteAsync(query);
+                if (results == null || !results.Any())
+                    return Ok(results);
+
+                return Ok(results);
+
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogWarning(ex, "Error fetching breweries from external API.");
+                return StatusCode(StatusCodes.Status503ServiceUnavailable, "External API unavailable.");
+            }
+
+        }
+        [HttpGet("{Name}")]
+        public async Task<IActionResult> GetBrewery(string name)
+        {
+            var brewery = await _repository.GetBreweryByNameAsync(name);
+            if (brewery == null) return NotFound();
+            return Ok(brewery);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddBrewery(Brewery brewery)
+        {
+            await _repository.AddBreweryAsync(brewery);
+            return CreatedAtAction(nameof(GetBrewery), new { id = brewery.Id }, brewery);
+        }
+
+    }
+
+
+
+}
+

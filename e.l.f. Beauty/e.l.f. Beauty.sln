@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 25.0.1706.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "e.l.f. Beauty", "e.l.f. Beauty.csproj", "{CFB6CF63-F29C-422D-A552-AD3346AC07CF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "e.l.f. Beauty.Tests", "..\e.l.f. Beauty.Tests\e.l.f. Beauty.Tests.csproj", "{8E0240C5-E4D0-44D3-BBAC-4CBBF1056B15}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CFB6CF63-F29C-422D-A552-AD3346AC07CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CFB6CF63-F29C-422D-A552-AD3346AC07CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CFB6CF63-F29C-422D-A552-AD3346AC07CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CFB6CF63-F29C-422D-A552-AD3346AC07CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E0240C5-E4D0-44D3-BBAC-4CBBF1056B15}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E0240C5-E4D0-44D3-BBAC-4CBBF1056B15}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E0240C5-E4D0-44D3-BBAC-4CBBF1056B15}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E0240C5-E4D0-44D3-BBAC-4CBBF1056B15}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5FFFE7FC-2A46-4262-A4A9-729029CF7378}
+	EndGlobalSection
+EndGlobal

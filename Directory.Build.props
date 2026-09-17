@@ -1,0 +1,11 @@
+<Project>
+	<PropertyGroup>
+	<!-- Do not globally suppress warnings here; enable project-level fixes instead -->
+	<SuppressTfmSupportBuildWarnings>false</SuppressTfmSupportBuildWarnings>
+	  <!-- Ensure RID-specific assets are resolved for native SQLite bundles used by EF Core/Sqlite on .NET 8 -->
+	<RuntimeIdentifiers>win-x64;linux-x64;linux-musl-x64;linux-musl-arm;linux-musl-arm64</RuntimeIdentifiers>
+	  <!-- Suppress SDK RID distribution warning when accepting native package layout differences -->
+	<NoWarn>$(NoWarn);NETSDK1206</NoWarn>
+  </PropertyGroup>
+  <!-- No automatic package version updates here; manage per-project to avoid central package management conflicts -->
+</Project>
