@@ -1,10 +1,10 @@
-# Ignore local SQLite database file
+﻿# Ignore local SQLite database file
 brewery.db
 
 # Common Visual Studio / .NET ignores
 .bin/
-obj/
-bin/
+**/obj/
+**/bin/
 *.user
 *.suo
 *.userosscache

@@ -1,0 +1,6 @@
+/Users/ra20557683/Projects/e.l.f-brewery-api/e.l.f. Beauty.Tests/bin/Debug/net6.0/CoverletSourceRootsMapping
+/Users/ra20557683/Projects/e.l.f-brewery-api/e.l.f. Beauty.Tests/obj/Debug/net6.0/e.l.f. Beauty.Tests.csproj.AssemblyReference.cache
+/Users/ra20557683/Projects/e.l.f-brewery-api/e.l.f. Beauty.Tests/obj/Debug/net6.0/e.l.f. Beauty.Tests.GeneratedMSBuildEditorConfig.editorconfig
+/Users/ra20557683/Projects/e.l.f-brewery-api/e.l.f. Beauty.Tests/obj/Debug/net6.0/e.l.f. Beauty.Tests.AssemblyInfoInputs.cache
+/Users/ra20557683/Projects/e.l.f-brewery-api/e.l.f. Beauty.Tests/obj/Debug/net6.0/e.l.f. Beauty.Tests.AssemblyInfo.cs
+/Users/ra20557683/Projects/e.l.f-brewery-api/e.l.f. Beauty.Tests/obj/Debug/net6.0/e.l.f. Beauty.Tests.csproj.CoreCompileInputs.cache

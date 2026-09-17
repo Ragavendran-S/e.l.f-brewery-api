@@ -1,0 +1,23 @@
+﻿# Ignore local SQLite database file
+brewery.db
+
+# Common Visual Studio / .NET ignores
+.bin/
+obj/
+bin/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.DS_Store
+published/
+
+# Rider
+.idea/
+
+# ASP.NET Core
+appsettings.*.json
+secrets.json
+
+# Visual Studio Code
+.vscode/
