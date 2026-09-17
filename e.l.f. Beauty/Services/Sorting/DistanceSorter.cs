@@ -1,20 +1,36 @@
-﻿using e.l.f._Beauty.Models;
+﻿using System.Linq;
+using e.l.f._Beauty.Models;
 
 public class DistanceSorter : IBrewerySorter
 {
     public IEnumerable<Brewery> Sort(IEnumerable<Brewery> breweries, BreweryQueryOptions options)
     {
+        if (breweries == null) return Enumerable.Empty<Brewery>();
+        if (options == null) return breweries;
+
         if (options.UserLat == null || options.UserLng == null)
             return breweries;
 
-        return options.Ascending
-            ? breweries.OrderBy(b => CalculateDistance(options.UserLat.Value, options.UserLng.Value, b.Latitude, b.Longitude))
-            : breweries.OrderByDescending(b => CalculateDistance(options.UserLat.Value, options.UserLng.Value, b.Latitude, b.Longitude));
+        // Compute nullable distances so we can treat missing coordinates consistently
+        var withDistance = breweries.Select(b => new
+        {
+            Item = b,
+            Distance = CalculateDistanceNullable(options.UserLat.Value, options.UserLng.Value, b.Latitude, b.Longitude)
+        });
+
+        if (options.Ascending)
+        {
+            // Closest first; missing coordinates should appear last
+            return withDistance.OrderBy(x => x.Distance ?? double.MaxValue).Select(x => x.Item);
+        }
+
+        // Farthest first; missing coordinates should also appear last
+        return withDistance.OrderByDescending(x => x.Distance ?? double.MinValue).Select(x => x.Item);
     }
 
-    private double CalculateDistance(double lat1, double lon1, double? lat2, double? lon2)
+    private double? CalculateDistanceNullable(double lat1, double lon1, double? lat2, double? lon2)
     {
-        if (lat2 == null || lon2 == null) return double.MaxValue;
+        if (lat2 == null || lon2 == null) return null;
 
         var dLat = (lat2.Value - lat1) * Math.PI / 180.0;
         var dLon = (lon2.Value - lon1) * Math.PI / 180.0;
