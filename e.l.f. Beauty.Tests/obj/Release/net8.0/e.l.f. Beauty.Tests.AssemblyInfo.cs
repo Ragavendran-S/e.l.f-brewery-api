@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("e.l.f. Beauty.Tests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1f540248ee83e964bf46fbe3c168c556663766c3")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cd4e42cda9e758f582db6881c0caf47d8fe1ee62")]
 [assembly: System.Reflection.AssemblyProductAttribute("e.l.f. Beauty.Tests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("e.l.f. Beauty.Tests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

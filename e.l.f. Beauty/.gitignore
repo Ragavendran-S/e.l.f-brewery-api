@@ -3,6 +3,8 @@ brewery.db
 
 # Common Visual Studio / .NET ignores
 .bin/
+.published/
+.github/workflows/
 **/obj/
 **/bin/
 *.user

@@ -23,7 +23,7 @@ namespace e.l.f._Beauty.Controllers
         public BreweriesControllerV2(IBreweryService service, ILogger<BreweryService> logger) { _service = service; _logger = logger; }
 
         [HttpGet]
-        //[Authorize]
+      
         public async Task<IActionResult> GetBreweries([FromQuery] BreweryQueryOptions options)
         {
             var result = await _service.GetBreweriesAsync(options);

@@ -67,11 +67,7 @@ namespace e.l.f._Beauty.Controllers
                     return BadRequest("Query cannot be empty.");
 
                 var results = await _service.AutocompleteAsync(query);
-                if (results == null)
-                    return NotFound(new { message = "No autocomplete results found for the provided query." });
-
-                // Return empty list as 200 OK so clients receive a consistent collection type
-                if (!results.Any())
+                if (results == null || !results.Any())
                     return Ok(results);
 
                 return Ok(results);
