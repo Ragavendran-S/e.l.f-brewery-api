@@ -2,6 +2,7 @@
 using e.l.f._Beauty.Repository;
 using e.l.f._Beauty.Services;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -27,6 +28,7 @@ namespace e.l.f._Beauty.Controllers
         private readonly IBreweryRepository _repository;
         private readonly IPagingHelper _pagingHelper;
         private readonly BreweryDbContext _dbContext;
+        [ActivatorUtilitiesConstructor]
         public BreweriesController(IBreweryService service, ILogger<BreweryService> logger,IBreweryRepository repository, BreweryDbContext dbContext, IPagingHelper pagingHelper)
         { _service = service; _logger = logger;_repository = repository; _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext)); _pagingHelper = pagingHelper ?? throw new ArgumentNullException(nameof(pagingHelper)); }
 

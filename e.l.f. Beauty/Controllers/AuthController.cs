@@ -77,7 +77,7 @@ namespace e.l.f._Beauty
         public IActionResult Login([FromBody] LoginModel model)
         {
             // Simple in-memory credential check for tests
-            if (model?.Username != "admin" || model?.Password != "password")
+            if (model?.Username != "admin" || model?.Password !="password")
             {
                 return Unauthorized();
             }
