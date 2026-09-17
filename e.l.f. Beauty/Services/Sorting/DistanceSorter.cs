@@ -5,11 +5,11 @@ public class DistanceSorter : IBrewerySorter
 {
     public IEnumerable<Brewery> Sort(IEnumerable<Brewery> breweries, BreweryQueryOptions options)
     {
-        if (breweries == null) return Enumerable.Empty<Brewery>();
-        if (options == null) return breweries;
+        if (breweries == null) throw new ArgumentNullException(nameof(breweries), "Breweries collection cannot be null.");
+        if (options == null) throw new ArgumentNullException(nameof(options), "BreweryQueryOptions cannot be null.");
 
         if (options.UserLat == null || options.UserLng == null)
-            return breweries;
+            throw new ArgumentException("User latitude and longitude are required for distance-based sorting.", nameof(options));
 
         // Compute nullable distances so we can treat missing coordinates consistently
         var withDistance = breweries.Select(b => new
