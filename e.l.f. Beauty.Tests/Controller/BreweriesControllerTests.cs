@@ -97,11 +97,12 @@ namespace e.l.f._Beauty.Tests.Controllers
         }
 
         [Fact]
+        
         public async Task Autocomplete_ServiceThrowsHttpRequestException_Returns503()
         {
             // Arrange
             _serviceMock
-                .Setup(s => s.AutocompleteAsync("lag"))
+                .Setup(s => s.SearchBreweriesAsync("lag"))
                 .ThrowsAsync(new HttpRequestException("External API down"));
 
             // Act
