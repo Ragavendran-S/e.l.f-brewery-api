@@ -19,6 +19,10 @@ namespace e.l.f._Beauty.Tests.Controllers
 
         public AuthControllerTests()
         {
+            // Ensure controller reads deterministic credentials during tests
+            Environment.SetEnvironmentVariable("AUTH_USERNAME", "admin");
+            Environment.SetEnvironmentVariable("AUTH_PASSWORD", "password");
+
             // Build in-memory configuration with a Base64 256-bit key
             var keyBytes = RandomNumberGenerator.GetBytes(32);
             var base64Key = Convert.ToBase64String(keyBytes);
