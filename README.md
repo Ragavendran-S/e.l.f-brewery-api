@@ -133,4 +133,127 @@ Contributing and pushing changes
 
 If you want me to rewrite or expand any section (run examples, sample curl commands, or change default ports), tell me
 which parts to emphasize and I'll update the README and push the changes.
+
+CLI examples, curl requests and sample responses
+-----------------------------------------------
+Below are concrete curl commands you can use against a running local instance (adjust host/port if different).
+
+1) Login (obtain JWT)
+
+```bash
+curl -s -X POST "http://localhost:5000/api/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"password"}'
+```
+
+Sample successful response:
+
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "expiresIn": 1800
+}
+```
+
+2) Validate token (diagnostic)
+
+```bash
+curl -s -X POST "http://localhost:5000/api/auth/validate" \
+  -H "Content-Type: application/json" \
+  -d '"<JWT_TOKEN_HERE>"'
+```
+
+Example responses:
+
+- Valid token or diagnostic validation failures (malformed/expired):
+  - HTTP 200 OK
+  - Body: "Check console logs for validation result"
+- Signature/key problem (misconfiguration):
+  - HTTP 401 Unauthorized
+  - Body: "Signature validation failed"
+
+3) Brewery search (example)
+
+Simple query by name:
+
+```bash
+curl -s "http://localhost:5000/api/brewery?search=ale&page=1&pageSize=10"
+```
+
+Distance-sorted search (POST or query options depending on controller):
+
+```bash
+curl -s "http://localhost:5000/api/brewery?sortBy=distance&userLat=34.05&userLng=-118.24"
+```
+
+Sample BreweryResponse (truncated)
+
+```json
+[
+  {
+	"id": "la",
+	"name": "LA Brewery",
+	"city": "Los Angeles",
+	"state": "California",
+	"country": "USA",
+	"latitude": 34.0522,
+	"longitude": -118.2437
+  }
+]
+```
+
+Deployment: Docker and Azure
+---------------------------
+Docker (simple)
+
+1) Create a Dockerfile at the API project root (example):
+
+```dockerfile
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+WORKDIR /app
+EXPOSE 80
+
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+COPY ["e.l.f. Beauty/e.l.f-brewery-api.csproj", "e.l.f. Beauty/"]
+RUN dotnet restore "e.l.f. Beauty/e.l.f-brewery-api.csproj"
+COPY . .
+WORKDIR "/src/e.l.f. Beauty"
+RUN dotnet publish "e.l.f-brewery-api.csproj" -c Release -o /app/publish
+
+FROM base AS final
+WORKDIR /app
+COPY --from=build /app/publish ./
+ENTRYPOINT ["dotnet", "e.l.f. Beauty.dll"]
+```
+
+2) Build and run locally via Docker:
+
+```bash
+docker build -t elf-brewery-api .
+docker run -p 5000:80 -e "Jwt__Key=<base64key>" -e "Auth__Username=admin" -e "Auth__Password=password" elf-brewery-api
+```
+
+Azure App Service (quick steps)
+
+1) Ensure you have the Azure CLI installed and are logged in (az login).
+2) Create a resource group and app service plan:
+
+```bash
+az group create -n elf-brewery-rg -l eastus
+az appservice plan create -n elf-brewery-plan -g elf-brewery-rg --sku B1
+```
+
+3) Create a web app and deploy with `az webapp` (Linux container or run via zip deploy for a self-contained app):
+
+```bash
+az webapp create -n elf-brewery-app -g elf-brewery-rg -p elf-brewery-plan --runtime "DOTNET|8.0"
+az webapp config appsettings set -n elf-brewery-app -g elf-brewery-rg --settings "Jwt:Key=<base64key>" "Jwt:Issuer=brewery-api" "Jwt:Audience=brewery-api" "Auth:Username=admin" "Auth:Password=password"
+az webapp deploy -n elf-brewery-app -g elf-brewery-rg --src-path ./e.l.f. Beauty/bin/Release/net8.0/publish
+```
+
+Notes
+- Replace <base64key> with a secure Base64-encoded 256-bit key. For production, use a secret manager instead of app settings.
+- Adjust ports and hostnames as appropriate for your environment.
+
 Creating Repository for e.l.f-brewery-api
