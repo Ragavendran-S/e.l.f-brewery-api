@@ -14,7 +14,7 @@
          This prevents build warnings about unsupported target frameworks while still building for net6.0. -->
     <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
     <!-- Suppress specific NuGet warning about package downgrade/resolution (e.g., AutoMapper dependency) -->
-    <NoWarn>$(NoWarn);NU1608</NoWarn>
+    <NoWarn>$(NoWarn);NU1608;NU1903</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

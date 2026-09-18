@@ -38,7 +38,7 @@ namespace e.l.f._Beauty.Services
 
                 breweries = _filter.Apply(breweries, options);
 
-                var sorter = _sorterFactory.GetSorter(options.SortBy);
+                var sorter = _sorterFactory.GetSorter(options.SortBy ?? string.Empty);
                 breweries = sorter.Sort(breweries, options);
 
                 var result = _paging.Apply(breweries, options);

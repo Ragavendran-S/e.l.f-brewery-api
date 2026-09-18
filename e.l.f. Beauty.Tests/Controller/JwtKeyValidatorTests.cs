@@ -22,7 +22,7 @@ namespace e.l.f._Beauty.Tests
         [Fact]
         public void ValidateAndGetKeyBytes_Missing_ThrowsInvalidOperationException()
         {
-            Assert.Throws<InvalidOperationException>(() => JwtKeyValidator.ValidateAndGetKeyBytes(null));
+            Assert.Throws<InvalidOperationException>(() => JwtKeyValidator.ValidateAndGetKeyBytes(null!));
             Assert.Throws<InvalidOperationException>(() => JwtKeyValidator.ValidateAndGetKeyBytes(string.Empty));
             Assert.Throws<InvalidOperationException>(() => JwtKeyValidator.ValidateAndGetKeyBytes("   "));
         }

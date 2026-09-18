@@ -105,9 +105,9 @@ namespace e.l.f._Beauty.Tests.Controllers
             var loginResult = controller.Login(new LoginModel { Username = "admin", Password = "password" }) as OkObjectResult;
             Assert.NotNull(loginResult);
 
-            var tokenProperty = loginResult!.Value.GetType().GetProperty("token");
+            var tokenProperty = loginResult!.Value!.GetType().GetProperty("token");
             Assert.NotNull(tokenProperty);
-            var tokenString = tokenProperty!.GetValue(loginResult.Value) as string;
+            var tokenString = tokenProperty!.GetValue(loginResult.Value!) as string;
             Assert.False(string.IsNullOrWhiteSpace(tokenString));
 
             // Act: call ValidateToken endpoint
