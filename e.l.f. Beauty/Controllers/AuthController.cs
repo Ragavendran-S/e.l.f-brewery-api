@@ -76,8 +76,11 @@ namespace e.l.f._Beauty
     [HttpPost("login")]
         public IActionResult Login([FromBody] LoginModel model)
         {
-            // Simple in-memory credential check for tests
-            if (model?.Username != "admin" || model?.Password !="password")
+            // Read expected credentials from environment variables
+            var expectedUsername = Environment.GetEnvironmentVariable("Username") ?? Environment.GetEnvironmentVariable("USERNAME");
+            
+             // Simple in-memory credential check for tests using environment-provided values
+            if (model?.Username != expectedUsername)
             {
                 return Unauthorized();
             }
