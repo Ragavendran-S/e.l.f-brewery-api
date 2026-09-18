@@ -150,10 +150,12 @@ namespace e.l.f._Beauty
         var symmetricKey = new SymmetricSecurityKey(keyBytes);
         var credentials = new SigningCredentials(symmetricKey, SecurityAlgorithms.HmacSha256);
 
+            if (model == null) throw new ArgumentNullException(nameof(model));
+            var username = model.Username ?? throw new ArgumentNullException(nameof(model.Username));
             var claims = new[]
             {
-            new Claim(ClaimTypes.Name, model.Username?? throw new ArgumentNullException(nameof(model.Username))),
-            new Claim(ClaimTypes.Role, "User")
+                new Claim(ClaimTypes.Name, username),
+                new Claim(ClaimTypes.Role, "User")
            };
         var issuer = _config["Jwt:Issuer"] ?? throw new InvalidOperationException("Issuer not configured");
         var audience = _config["Jwt:Audience"] ?? throw new InvalidOperationException("Audience not configured");
