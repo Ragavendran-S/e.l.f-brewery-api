@@ -145,18 +145,20 @@ namespace e.l.f._Beauty
                 return null;
             }
 
-            // Prefer IConfiguration values (including user-secrets), then environment variables, then test defaults.
+            // Prefer IConfiguration values (including user-secrets), then AUTH_* environment variables.
+            // Do NOT fall back to generic 'Username'/'Password' environment variables because
+            // Windows defines a built-in %USERNAME% value which would inadvertently override
+            // the expected default credentials. If no credentials are configured, use safe
+            // defaults for local development/testing.
             string? expectedUsername = _config["Auth:Username"]
                 ?? _config["AUTH_USERNAME"]
-                ?? _config["Username"]
                 ?? ReadEnv("AUTH_USERNAME")
-                ?? ReadEnv("Username");
+                ?? "admin";
 
             string? expectedPassword = _config["Auth:Password"]
                 ?? _config["AUTH_PASSWORD"]
-                ?? _config["Password"]
                 ?? ReadEnv("AUTH_PASSWORD")
-                ?? ReadEnv("Password");
+                ?? "password";
 
             // If no credentials are configured, keep test defaults.
             //if (string.IsNullOrEmpty(expectedUsername)) expectedUsername = "admin";
