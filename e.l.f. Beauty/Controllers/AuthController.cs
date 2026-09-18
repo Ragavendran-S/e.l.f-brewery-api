@@ -102,12 +102,22 @@ namespace e.l.f._Beauty
                 return null;
             }
 
-            var expectedUsername = ReadEnv("AUTH_USERNAME");
-            var expectedPassword = ReadEnv("AUTH_PASSWORD");
+            // Prefer IConfiguration values (including user-secrets), then environment variables, then test defaults.
+            string? expectedUsername = _config["Auth:Username"]
+                ?? _config["AUTH_USERNAME"]
+                ?? _config["Username"]
+                ?? ReadEnv("AUTH_USERNAME")
+                ?? ReadEnv("Username");
 
-            //// If explicit env vars are not provided, fall back to defaults used by unit tests
-            //if (string.IsNullOrEmpty(expectedUsername)) expectedUsername = "admin";
-            //if (string.IsNullOrEmpty(expectedPassword)) expectedPassword = "password";
+            string? expectedPassword = _config["Auth:Password"]
+                ?? _config["AUTH_PASSWORD"]
+                ?? _config["Password"]
+                ?? ReadEnv("AUTH_PASSWORD")
+                ?? ReadEnv("Password");
+
+            // If no credentials are configured, keep test defaults.
+            if (string.IsNullOrEmpty(expectedUsername)) expectedUsername = "admin";
+            if (string.IsNullOrEmpty(expectedPassword)) expectedPassword = "password";
 
              // Simple in-memory credential check for tests using environment-provided values
             if (model?.Username != expectedUsername || model?.Password != expectedPassword)
