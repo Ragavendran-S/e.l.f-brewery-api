@@ -76,13 +76,38 @@ namespace e.l.f._Beauty
     [HttpPost("login")]
         public IActionResult Login([FromBody] LoginModel model)
         {
-            // Read expected credentials from explicit environment variables (avoid common system vars like USERNAME)
-            var expectedUsername = Environment.GetEnvironmentVariable("AUTH_USERNAME");
-            var expectedPassword = Environment.GetEnvironmentVariable("AUTH_PASSWORD");
+            // Read expected credentials from explicit environment variables (try process, then user, then machine)
+            static string? ReadEnv(string name)
+            {
+                // 1) process-level (inherited at process start or set at runtime)
+                var v = Environment.GetEnvironmentVariable(name);
+                if (!string.IsNullOrEmpty(v)) return v;
 
-            // If explicit env vars are not provided, fall back to defaults used by unit tests
-            if (string.IsNullOrEmpty(expectedUsername)) expectedUsername = "admin";
-            if (string.IsNullOrEmpty(expectedPassword)) expectedPassword = "password";
+                // 2) user-level
+                try
+                {
+                    v = Environment.GetEnvironmentVariable(name, EnvironmentVariableTarget.User);
+                    if (!string.IsNullOrEmpty(v)) return v;
+                }
+                catch { /* ignore access issues */ }
+
+                // 3) machine-level
+                try
+                {
+                    v = Environment.GetEnvironmentVariable(name, EnvironmentVariableTarget.Machine);
+                    if (!string.IsNullOrEmpty(v)) return v;
+                }
+                catch { /* ignore access issues */ }
+
+                return null;
+            }
+
+            var expectedUsername = ReadEnv("AUTH_USERNAME");
+            var expectedPassword = ReadEnv("AUTH_PASSWORD");
+
+            //// If explicit env vars are not provided, fall back to defaults used by unit tests
+            //if (string.IsNullOrEmpty(expectedUsername)) expectedUsername = "admin";
+            //if (string.IsNullOrEmpty(expectedPassword)) expectedPassword = "password";
 
              // Simple in-memory credential check for tests using environment-provided values
             if (model?.Username != expectedUsername || model?.Password != expectedPassword)
