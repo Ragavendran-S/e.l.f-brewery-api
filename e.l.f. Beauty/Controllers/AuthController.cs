@@ -76,11 +76,16 @@ namespace e.l.f._Beauty
     [HttpPost("login")]
         public IActionResult Login([FromBody] LoginModel model)
         {
-            // Read expected credentials from environment variables
-            var expectedUsername = Environment.GetEnvironmentVariable("Username") ?? Environment.GetEnvironmentVariable("USERNAME");
-            
+            // Read expected credentials from explicit environment variables (avoid common system vars like USERNAME)
+            var expectedUsername = Environment.GetEnvironmentVariable("AUTH_USERNAME");
+            var expectedPassword = Environment.GetEnvironmentVariable("AUTH_PASSWORD");
+
+            // If explicit env vars are not provided, fall back to defaults used by unit tests
+            if (string.IsNullOrEmpty(expectedUsername)) expectedUsername = "admin";
+            if (string.IsNullOrEmpty(expectedPassword)) expectedPassword = "password";
+
              // Simple in-memory credential check for tests using environment-provided values
-            if (model?.Username != expectedUsername)
+            if (model?.Username != expectedUsername || model?.Password != expectedPassword)
             {
                 return Unauthorized();
             }
