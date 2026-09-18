@@ -17,4 +17,7 @@ public class ExternalBrewery
     public string? location_city { get; set; }
     public string? location_state { get; set; }
     public string? location_country { get; set; }
+    // Open Brewery DB provides latitude/longitude as strings (nullable)
+    public string? latitude { get; set; }
+    public string? longitude { get; set; }
 }

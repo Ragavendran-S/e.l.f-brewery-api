@@ -21,7 +21,15 @@ public class BreweryProfile : Profile
             .ForMember(dest => dest.Brewery_Type, opt => opt.Ignore())
             .ForMember(dest => dest.Street, opt => opt.Ignore())
             .ForMember(dest => dest.Phone, opt => opt.Ignore())
-            .ForMember(dest => dest.Latitude, opt => opt.Ignore())
-            .ForMember(dest => dest.Longitude, opt => opt.Ignore());
+            .ForMember(dest => dest.Latitude, opt => opt.MapFrom(src => ParseNullableDouble(src.latitude)))
+            .ForMember(dest => dest.Longitude, opt => opt.MapFrom(src => ParseNullableDouble(src.longitude)));
+    }
+
+    private static double? ParseNullableDouble(string? s)
+    {
+        if (string.IsNullOrWhiteSpace(s)) return null;
+        if (double.TryParse(s, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var d))
+            return d;
+        return null;
     }
 }
