@@ -2,9 +2,9 @@ name: .NET CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, 'Feature/**' ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, 'Feature/**' ]
 
 jobs:
   build:
@@ -51,14 +51,14 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Log in to Docker Hub
-        if: ${{ secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != '' }}
+        if: ${{ secrets.DOCKERHUB_USERNAME && secrets.DOCKERHUB_TOKEN }}
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push image
-        if: ${{ secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != '' }}
+        if: ${{ secrets.DOCKERHUB_USERNAME && secrets.DOCKERHUB_TOKEN }}
         uses: docker/build-push-action@v4
         with:
           context: './e.l.f. Beauty'
