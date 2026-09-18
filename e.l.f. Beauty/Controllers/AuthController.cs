@@ -116,8 +116,8 @@ namespace e.l.f._Beauty
                 ?? ReadEnv("Password");
 
             // If no credentials are configured, keep test defaults.
-            if (string.IsNullOrEmpty(expectedUsername)) expectedUsername = "admin";
-            if (string.IsNullOrEmpty(expectedPassword)) expectedPassword = "password";
+            //if (string.IsNullOrEmpty(expectedUsername)) expectedUsername = "admin";
+            //if (string.IsNullOrEmpty(expectedPassword)) expectedPassword = "password";
 
              // Simple in-memory credential check for tests using environment-provided values
             if (model?.Username != expectedUsername || model?.Password != expectedPassword)

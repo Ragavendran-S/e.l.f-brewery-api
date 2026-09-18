@@ -80,33 +80,48 @@ namespace e.l.f._Beauty
         return diff == 0;
     }
 
-    static void ManualValidate(string token, byte[] keyBytes, string? expectedIssuer, string? expectedAudience, bool validateLifetime)
-    {
-        var parts = token.Split('.');
-        if (parts.Length != 3) throw new SecurityTokenException("Invalid token format");
-        var payload = Encoding.UTF8.GetString(Base64UrlDecode(parts[1]));
+        static void ManualValidate(string token, byte[] keyBytes, string? expectedIssuer, string? expectedAudience, bool validateLifetime)
+        {
+            var parts = token.Split('.');
+            if (parts.Length != 3) throw new SecurityTokenException("Invalid token format");
 
-        // NOTE: Skip signature verification here to avoid runtime dependency/version issues
-        // with identity-model packages in the test environment. We validate issuer/audience/expiry
-        // from the token payload only.
+            // Validate signature using HMAC-SHA256 (common JWT algorithm). This ensures that a token
+            // with forged claims but no valid signature is rejected.
+            try
+            {
+                var ascii = Encoding.ASCII.GetBytes(parts[0] + "." + parts[1]);
+                var signatureBytes = Base64UrlDecode(parts[2]);
+                using var hmac = new System.Security.Cryptography.HMACSHA256(keyBytes);
+                var computed = hmac.ComputeHash(ascii);
+                if (!CryptographicEquals(computed, signatureBytes))
+                {
+                    throw new SecurityTokenInvalidSignatureException("Signature validation failed");
+                }
+            }
+            catch (FormatException ex)
+            {
+                throw new SecurityTokenException("Invalid signature encoding", ex);
+            }
 
-        // Parse payload JSON and validate issuer/audience/expiry
-        var doc = JsonDocument.Parse(payload);
-        if (expectedIssuer != null && doc.RootElement.TryGetProperty("iss", out var iss))
-        {
-            if (iss.GetString() != expectedIssuer) throw new SecurityTokenException("Issuer mismatch");
+            var payload = Encoding.UTF8.GetString(Base64UrlDecode(parts[1]));
+
+            // Parse payload JSON and validate issuer/audience/expiry
+            var doc = JsonDocument.Parse(payload);
+            if (expectedIssuer != null && doc.RootElement.TryGetProperty("iss", out var iss))
+            {
+                if (iss.GetString() != expectedIssuer) throw new SecurityTokenException("Issuer mismatch");
+            }
+            if (expectedAudience != null && doc.RootElement.TryGetProperty("aud", out var aud))
+            {
+                if (aud.GetString() != expectedAudience) throw new SecurityTokenException("Audience mismatch");
+            }
+            if (validateLifetime && doc.RootElement.TryGetProperty("exp", out var exp))
+            {
+                var seconds = exp.GetInt64();
+                var expiry = DateTimeOffset.FromUnixTimeSeconds(seconds).UtcDateTime;
+                if (expiry < DateTime.UtcNow) throw new SecurityTokenExpiredException("Token expired");
+            }
         }
-        if (expectedAudience != null && doc.RootElement.TryGetProperty("aud", out var aud))
-        {
-            if (aud.GetString() != expectedAudience) throw new SecurityTokenException("Audience mismatch");
-        }
-        if (validateLifetime && doc.RootElement.TryGetProperty("exp", out var exp))
-        {
-            var seconds = exp.GetInt64();
-            var expiry = DateTimeOffset.FromUnixTimeSeconds(seconds).UtcDateTime;
-            if (expiry < DateTime.UtcNow) throw new SecurityTokenExpiredException("Token expired");
-        }
-    }
 }
 
 
