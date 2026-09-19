@@ -39,6 +39,9 @@ Architecture and key components
   - AutoMapper profiles (AutoMapper/BreweryProfile.cs) map ExternalBrewery -> Brewery and BreweryResponse.
   - ExternalBrewery models match the fields returned by Open Brewery DB (including latitude/longitude strings).
   - Note: Upstream payloads may omit latitude/longitude or provide malformed values. The project models ExternalBrewery.latitude/longitude as nullable strings and maps them defensively to internal double? properties using a safe parser. Tests cover missing and malformed coordinate values.
+- Routing and authorization
+  - v1 route standardized to: /api/v{version:apiVersion}/breweries (lowercase) to match v2.
+  - Both BreweriesController (v1) and BreweriesControllerV2 (v2) enforce [Authorize] for all endpoints.
 - Validation
   - A TokenValidator exists for diagnostic validation; the AuthController uses JwtSecurityTokenHandler for token checks.
 - Tests
