@@ -66,13 +66,13 @@ namespace e.l.f._Beauty.Services
             //For Internal Demo - End
             // Fetch from repository or external API
             var key = $"search:{query}";
+            // Fetch search results from repository (which may call an upstream autocomplete endpoint).
+            // Do NOT re-filter results here to avoid duplicating upstream filtering logic; repository
+            // implementations are expected to return already-filtered results for the query.
             var externalResults = await _cache.GetOrFetchAsync(key, () => _repository.SearchBreweriesAsync(query));
-            // Map external → internal
+            // Map external → internal and return as-is
             var mappedResults = _mapper.Map<IEnumerable<Brewery>>(externalResults);
-
-            return mappedResults.Where(b =>
-            !string.IsNullOrEmpty(b.Name) &&
-            b.Name.StartsWith(query, StringComparison.OrdinalIgnoreCase));
+            return mappedResults;
 
             //return await _repository.SearchBreweriesAsync(query);
         }
@@ -100,13 +100,13 @@ namespace e.l.f._Beauty.Services
         public async Task<IEnumerable<Brewery>> AutocompleteAsync(string query)
         {
             var key = $"autocomplete:{query}";
-            var breweries = await _cache.GetOrFetchAsync("breweries", () => _repository.GetBreweriesAsync());
-
-            var results = breweries
-                .Where(b => !string.IsNullOrEmpty(b.Name) &&
-                            b.Name.StartsWith(query, StringComparison.OrdinalIgnoreCase));
-
-            return results;
+            // Use per-query cache key so different autocomplete queries do not collide with
+            // the general breweries list cache. Fetch from repository.SearchBreweriesAsync
+            // (which may call an upstream autocomplete API) rather than loading the entire
+            // breweries list and filtering locally.
+            var externalResults = await _cache.GetOrFetchAsync(key, () => _repository.SearchBreweriesAsync(query));
+            var mappedResults = _mapper.Map<IEnumerable<Brewery>>(externalResults);
+            return mappedResults;
         }
         
     }
