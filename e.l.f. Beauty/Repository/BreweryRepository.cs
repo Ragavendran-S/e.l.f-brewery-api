@@ -10,13 +10,13 @@ namespace e.l.f._Beauty.Repository
 {
     public class BreweryRepository : IBreweryRepository
     {
-        private readonly HttpClient _httpClient;
+        private readonly IUpstreamBreweryClient _upstream;
         private readonly BreweryDbContext? _dbContext;
         private readonly ILogger<BreweryRepository> _logger;
 
-        public BreweryRepository(HttpClient httpClient, BreweryDbContext? dbContext, ILogger<BreweryRepository> logger)
+        public BreweryRepository(IUpstreamBreweryClient upstream, BreweryDbContext? dbContext, ILogger<BreweryRepository> logger)
         {
-            _httpClient = httpClient;
+            _upstream = upstream ?? throw new ArgumentNullException(nameof(upstream));
             _dbContext = dbContext;
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -27,7 +27,6 @@ namespace e.l.f._Beauty.Repository
 
             if (_dbContext != null)
             {
-                // Delegate to EF Core implementation when a context is available
                 _dbContext.Breweries.AddRange(breweries);
                 await _dbContext.SaveChangesAsync();
                 return new BulkInsertResult
@@ -44,9 +43,7 @@ namespace e.l.f._Beauty.Repository
             {
                 try
                 {
-                    var json = JsonSerializer.Serialize(brewery);
-                    using var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
-                    var response = await _httpClient.PostAsync("/v1/breweries", content);
+                    var response = await _upstream.PostBreweryAsync(brewery);
                     if (!response.IsSuccessStatusCode)
                     {
                         _logger.LogWarning("Upstream POST for brewery {Id} returned status {Status}", brewery.Id, response.StatusCode);
@@ -58,8 +55,6 @@ namespace e.l.f._Beauty.Repository
                 }
                 catch (Exception ex)
                 {
-                    // Log failures for diagnostics but continue with the next item to preserve
-                    // best-effort behavior for bulk operations.
                     _logger.LogError(ex, "Failed to POST brewery {Id} to upstream API; continuing with others", brewery.Id);
                     result.FailedCount++;
                     result.Failures.Add(new BulkInsertFailure { BreweryId = brewery.Id, Reason = ex.Message });
@@ -82,24 +77,17 @@ namespace e.l.f._Beauty.Repository
             }
 
             // Otherwise, try to POST to the upstream API if supported (best-effort).
-            // Many public brewery APIs are read-only; implement a safe no-op fallback.
             try
             {
-                var json = JsonSerializer.Serialize(brewery);
-                using var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
-                var response = await _httpClient.PostAsync("/v1/breweries", content);
-                // Treat non-success as a no-op but surface for diagnostics
+                var response = await _upstream.PostBreweryAsync(brewery);
                 if (!response.IsSuccessStatusCode)
                 {
                     _logger.LogWarning("Upstream POST for brewery {Id} returned status {Status}", brewery.Id, response.StatusCode);
-                    // Do not throw here to avoid breaking callers when upstream is read-only.
                     return;
                 }
             }
             catch (Exception ex)
             {
-                // Log and rethrow so callers are aware of persistent failures. Use 'throw;' to
-                // preserve the original stack trace rather than 'throw ex'.
                 _logger.LogError(ex, "Failed to POST brewery {Id} to upstream API", brewery.Id);
                 throw;
             }
@@ -107,33 +95,12 @@ namespace e.l.f._Beauty.Repository
 
         public async Task<IEnumerable<Brewery>> GetBreweriesAsync()
         {
-            var response = await _httpClient.GetAsync("https://api.openbrewerydb.org/v1/breweries");
-            response.EnsureSuccessStatusCode();
-            if (!response.IsSuccessStatusCode)
-            {
-                // Map 4xx/5xx to UpstreamApiException with status and body
-                throw new UpstreamApiException((int)response.StatusCode, $"Upstream returned {(int)response.StatusCode}", response.ReasonPhrase);
-            }
-            var json = await response.Content.ReadAsStringAsync();
-            
-            return JsonSerializer.Deserialize<IEnumerable<Brewery>>(json,
-            new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
-            ?? Enumerable.Empty<Brewery>();
+            return await _upstream.GetBreweriesAsync();
         }
 
         public async Task<IEnumerable<Brewery?>> GetBreweryByNameAsync(string name)
         {
-            var response = await _httpClient.GetAsync("https://api.openbrewerydb.org/v1/breweries?by_name=name");
-            response.EnsureSuccessStatusCode();
-            if (!response.IsSuccessStatusCode)
-            {
-                // Map 4xx/5xx to UpstreamApiException with status and body
-                throw new UpstreamApiException((int)response.StatusCode, $"Upstream returned {(int)response.StatusCode}", response.ReasonPhrase);
-            }
-            var json = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<IEnumerable<Brewery>>(json,
-             new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
-             ?? Enumerable.Empty<Brewery>();
+            return await _upstream.GetBreweryByNameAsync(name);
         }
 
         //UnComment this method for SQLLite and inject BreweryDbContext as DI
@@ -143,22 +110,8 @@ namespace e.l.f._Beauty.Repository
         //}
         public async Task<IEnumerable<Brewery>> SearchBreweriesAsync(string query)
         {
-           
-                // Open Brewery DB supports autocomplete via /breweries/autocomplete
-                var response = await _httpClient.GetAsync($"https://api.openbrewerydb.org/v1/breweries/autocomplete?query={query}");
-                response.EnsureSuccessStatusCode();
-                if (!response.IsSuccessStatusCode)
-                {
-                    // Map 4xx/5xx to UpstreamApiException with status and body
-                    throw new UpstreamApiException((int)response.StatusCode, $"Upstream returned {(int)response.StatusCode}", response.ReasonPhrase);
-                }
-              var json = await response.Content.ReadAsStringAsync();
-
-                var breweries = JsonSerializer.Deserialize<List<Brewery>>(json,
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                
-                return breweries ?? new List<Brewery>();
-            
+            // Delegate autocomplete/search to the upstream client which encapsulates HTTP and mapping concerns.
+            return await _upstream.SearchBreweriesAsync(query);
         }
     }
 }

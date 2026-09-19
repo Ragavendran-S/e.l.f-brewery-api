@@ -16,8 +16,9 @@ public class BreweryRepositoryFailuresTests
         // Arrange: HttpClient that throws on PostAsync
         var handler = new FailingHandler();
         var client = new HttpClient(handler) { BaseAddress = new Uri("https://example.test") };
+        var upstream = new e.l.f._Beauty.Repository.UpstreamBreweryClient(client);
         var logger = new NullLogger<BreweryRepository>();
-        var repo = new e.l.f._Beauty.Repository.BreweryRepository(client, null, logger);
+        var repo = new e.l.f._Beauty.Repository.BreweryRepository(upstream, null, logger);
 
         var brewery = new Brewery { Id = "x1", Name = "Fail" };
 
