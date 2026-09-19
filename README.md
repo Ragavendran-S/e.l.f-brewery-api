@@ -67,6 +67,47 @@ Local development with user-secrets (recommended):
 5. dotnet user-secrets set "Auth:Username" "admin"
 6. dotnet user-secrets set "Auth:Password" "password"
 
+Production and deployment
+-------------------------
+- Never store real production secrets (Jwt:Key) in the repository. Use one of the following approaches to provide the secret to your deployed app:
+  - Environment variable: set Jwt__Key to the base64 string value (double underscore maps to colon in IConfiguration), e.g. Jwt__Key
+  - Secret store / Key Vault: inject the secret at deployment time and populate configuration from the provider
+  - CI/CD secret variables: supply Jwt__Key as a protected secret in your pipeline
+
+Example (PowerShell) to set the environment variable for a service host:
+
+```powershell
+$env:Jwt__Key = "<base64-key>"
+```
+
+Example (Linux):
+
+```bash
+export Jwt__Key="<base64-key>"
+```
+
+Generating a secure Jwt:Key
+---------------------------
+- Recommended: generate a 32-byte (or larger) random key and encode it as base64. Example with OpenSSL:
+
+```bash
+openssl rand -base64 32
+```
+
+- On Windows (PowerShell):
+
+```powershell
+[Convert]::ToBase64String((New-Object System.Security.Cryptography.RNGCryptoServiceProvider).GetBytes(32))
+```
+
+When to use appsettings.Production.json
+---------------------------------------
+- You can add appsettings.Production.json to supply defaults for production but avoid placing secrets there. Use placeholders like "PLACEHOLDER" and rely on environment variables or a secret store for the actual Jwt:Key.
+
+CI note
+-------
+- In CI pipelines you can provide Jwt__Key as an environment variable so integration tests and the test host can start with a deterministic key compatible with your signing algorithm. Do not expose the secret in logs or public traces.
+
 Windows environment variable note
 --------------------------------
 Do NOT rely on generic environment names like `Username`/`Password` because Windows defines a built-in `%USERNAME%`
