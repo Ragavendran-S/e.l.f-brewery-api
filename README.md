@@ -42,6 +42,11 @@ Architecture and key components
 - Routing and authorization
   - v1 route standardized to: /api/v{version:apiVersion}/breweries (lowercase) to match v2.
   - Both BreweriesController (v1) and BreweriesControllerV2 (v2) enforce [Authorize] for all endpoints.
+
+Logging
+ - The application uses Microsoft.Extensions.Logging with structured logging throughout.
+ - Program startup and JWT events now log via ILogger and EventIds (no Console.WriteLine calls).
+ - Use ILogger<T> and EventIds for structured, searchable logs. Example events: AuthStartup, TokenValidation, TokenValidationFailed, JwtKeyWarning.
 - Validation
   - A TokenValidator exists for diagnostic validation; the AuthController uses JwtSecurityTokenHandler for token checks.
 - Tests

@@ -72,19 +72,36 @@ var jwtAudience = builder.Configuration["Jwt:Audience"];
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.Events = new JwtBearerEvents
+    options.Events = new JwtBearerEvents
+    {
+        OnAuthenticationFailed = ctx =>
         {
-            OnAuthenticationFailed = ctx =>
+            try
             {
-                Console.WriteLine($" Token failed: {ctx.Exception.Message}");
-                return Task.CompletedTask;
-            },
-            OnTokenValidated = ctx =>
-            {
-                Console.WriteLine(" Token validated successfully");
-                return Task.CompletedTask;
+                var logger = ctx.HttpContext?.RequestServices.GetService(typeof(ILogger<Program>)) as ILogger;
+                // Structured log with event id for token validation failures
+                logger?.LogWarning(e.l.f.Logging.EventIds.TokenValidationFailed, ctx.Exception, "Token authentication failed: {Message}", ctx.Exception?.Message);
             }
-        };
+            catch
+            {
+                // Swallow any logging errors to avoid masking the original authentication failure
+            }
+            return Task.CompletedTask;
+        },
+        OnTokenValidated = ctx =>
+        {
+            try
+            {
+                var logger = ctx.HttpContext?.RequestServices.GetService(typeof(ILogger<Program>)) as ILogger;
+                logger?.LogInformation(e.l.f.Logging.EventIds.TokenValidation, "Token validated successfully for request {Path}", ctx.HttpContext?.Request?.Path.Value);
+            }
+            catch
+            {
+                // Swallow logging exceptions
+            }
+            return Task.CompletedTask;
+        }
+    };
         // Validate jwtKey early with a clear error message so startup fails fast if misconfigured.
         // Normalize key bytes using JwtKeyHelper so runtime uses the same bytes as token issuance
         var keyBytes = e.l.f._Beauty.Security.JwtKeyHelper.GetKeyBytes(jwtKey);
