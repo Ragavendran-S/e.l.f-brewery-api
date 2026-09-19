@@ -159,6 +159,42 @@ Sample successful response:
 
 ```bash
 curl -s -X POST "http://localhost:5000/api/auth/validate" \
+
+Integration tests and developer test endpoint
+--------------------------------------------
+This repository includes an end-to-end integration test that verifies the full authentication flow (issue JWT via the real /api/auth/login and call a protected endpoint that enforces [Authorize]). The test uses Microsoft.AspNetCore.Mvc.Testing (WebApplicationFactory) and runs as part of the standard test suite.
+
+- Test file: e.l.f. Beauty.Tests/Integration/AuthenticationIntegrationTests.cs
+- What it does: POSTs to /api/auth/login with the development credentials (admin/password), extracts the returned token, and calls the protected endpoint below with an Authorization: Bearer <token> header. The test asserts the protected endpoint returns HTTP 200.
+
+Developer-provided protected endpoint
+------------------------------------
+For local verification the project exposes a small test controller:
+
+- GET /api/test/protected — an endpoint decorated with [Authorize] that returns a small JSON payload when the request contains a valid JWT.
+
+This endpoint exists purely for integration test coverage and developer convenience. Remove or secure it in production deployments if you do not want a dedicated test endpoint.
+
+Program entry point and test host notes
+--------------------------------------
+Because the project uses top-level statements in Program.cs, a public partial class Program is added to the file so WebApplicationFactory<Program> can locate and start the application assembly for integration tests. The class is harmless at runtime and required for a robust test host.
+
+Integration test instructions
+-----------------------------
+1. Ensure Jwt:Key, Jwt:Issuer, and Jwt:Audience are configured (user-secrets or environment variables) for the test run. For local development the defaults (admin/password) are used for credentials if no Auth config is set.
+2. From repository root run:
+
+   dotnet test --configuration Release
+
+   This will run both unit and the integration tests. The integration test spins up an in-memory TestServer and exercises the actual controllers and middleware.
+
+Jwt key normalization
+---------------------
+The codebase now includes a JwtKeyHelper that normalizes the configured Jwt:Key into deterministic signing bytes used by both token issuance and JwtBearer validation. The helper accepts Base64 or raw strings and expands short inputs using SHA-256 so local dev keys and Base64 secrets behave consistently. Ensure the same Jwt:Key value is available to your running process and tests.
+
+Security reminder
+-----------------
+The diagnostic token validate endpoint and the developer protected test endpoint are intended for local development and testing. For production, restrict access or remove these endpoints and store secrets in a secure location (Key Vault, secret manager, etc.).
   -H "Content-Type: application/json" \
   -d '"<JWT_TOKEN_HERE>"'
 ```
