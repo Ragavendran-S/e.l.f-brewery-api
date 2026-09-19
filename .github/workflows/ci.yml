@@ -32,15 +32,31 @@ jobs:
       - name: Build
         run: dotnet build --no-restore --configuration Release --verbosity minimal
 
-      - name: Test
+      - name: Test (with coverage)
         run: |
-          dotnet test --no-build --configuration Release --logger "trx;LogFileName=test_results.trx"
+          dotnet test --no-build --configuration Release --logger "trx;LogFileName=test_results.trx" --collect:"XPlat Code Coverage"
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: '**/test_results.trx'
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: '**/coverage.cobertura.xml'
+
+      - name: Upload coverage to Codecov
+        if: ${{ secrets.CODECOV_TOKEN }}
+        uses: codecov/codecov-action@v4
+        with:
+          files: '**/coverage.cobertura.xml'
+          flags: unittests
+          fail_ci_if_error: true
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   docker-publish:
     needs: build
