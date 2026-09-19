@@ -21,7 +21,6 @@ brewery.db
 
 
 # ASP.NET Core
-appsettings.*.json
 secrets.json
 
 # Visual Studio Code
