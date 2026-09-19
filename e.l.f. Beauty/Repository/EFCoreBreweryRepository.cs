@@ -22,7 +22,17 @@ namespace ElfBreweryApi.Repositories
 
         public async Task<IEnumerable<Brewery?>> GetBreweryByNameAsync(string name)
         {
-            return await _context.Breweries.AsNoTracking().ToListAsync();
+            if (string.IsNullOrWhiteSpace(name))
+                return Enumerable.Empty<Brewery?>();
+
+            // Search by name (case-insensitive, contains). Return any matching breweries.
+            var pattern = $"%{name}%";
+            var results = await _context.Breweries
+                .AsNoTracking()
+                .Where(b => EF.Functions.Like(b.Name, pattern))
+                .ToListAsync();
+
+            return results.Cast<Brewery?>();
         }
 
         public async Task AddBreweryAsync(Brewery brewery)
@@ -46,9 +56,22 @@ namespace ElfBreweryApi.Repositories
             };
         }
 
-        public Task<IEnumerable<Brewery>> SearchBreweriesAsync(string query)
+        public async Task<IEnumerable<Brewery>> SearchBreweriesAsync(string query)
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrWhiteSpace(query))
+                return Enumerable.Empty<Brewery>();
+
+            var pattern = $"%{query}%";
+
+            // Search name or city for autocomplete/search behavior. Limit results for performance.
+            var results = await _context.Breweries
+                .AsNoTracking()
+                .Where(b => EF.Functions.Like(b.Name, pattern) || EF.Functions.Like(b.City, pattern))
+                .OrderBy(b => b.Name)
+                .Take(25)
+                .ToListAsync();
+
+            return results;
         }
     }
 }
