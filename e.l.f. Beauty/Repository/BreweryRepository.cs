@@ -93,9 +93,42 @@ namespace e.l.f._Beauty.Repository
             }
         }
 
-        public async Task<IEnumerable<Brewery>> GetBreweriesAsync()
+        public async Task<IEnumerable<Brewery>> GetBreweriesAsync(BreweryQueryOptions options)
         {
-            return await _upstream.GetBreweriesAsync();
+            // If a DbContext is available, perform DB-backed query with paging to avoid loading everything.
+            if (_dbContext != null)
+            {
+                var query = _dbContext.Breweries.AsNoTracking().AsQueryable();
+
+                // Apply simple search/city filters that repository can handle efficiently
+                if (!string.IsNullOrWhiteSpace(options?.Search))
+                    query = query.Where(b => EF.Functions.Like(b.Name, $"%{options.Search}%"));
+                if (!string.IsNullOrWhiteSpace(options?.City))
+                    query = query.Where(b => b.City == options.City);
+
+                // Apply sorting if available
+                if (!string.IsNullOrWhiteSpace(options?.SortBy))
+                {
+                    if (options.SortBy.Equals("Name", StringComparison.OrdinalIgnoreCase))
+                        query = options.Ascending ? query.OrderBy(b => b.Name) : query.OrderByDescending(b => b.Name);
+                    else if (options.SortBy.Equals("City", StringComparison.OrdinalIgnoreCase))
+                        query = options.Ascending ? query.OrderBy(b => b.City) : query.OrderByDescending(b => b.City);
+                }
+
+                // Use the injected paging helper by resolving IPagingHelper from current service provider is not available here.
+                // Instead apply simple paging logic to the IQueryable to keep DB-side pagination.
+                var page = options?.Page ?? 1;
+                var pageSize = options?.PageSize ?? 10;
+                if (page < 1) page = 1;
+                if (pageSize < 1) pageSize = 10;
+                if (pageSize > 100) pageSize = 100;
+
+                var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+                return items;
+            }
+
+            // Fallback to upstream client when no DB is available.
+            return await _upstream.GetBreweriesAsync(options);
         }
 
         public async Task<IEnumerable<Brewery?>> GetBreweryByNameAsync(string name)

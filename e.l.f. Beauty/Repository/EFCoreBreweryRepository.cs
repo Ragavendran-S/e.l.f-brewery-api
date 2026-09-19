@@ -15,9 +15,31 @@ namespace ElfBreweryApi.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<Brewery>> GetBreweriesAsync()
+        public async Task<IEnumerable<Brewery>> GetBreweriesAsync(BreweryQueryOptions options)
         {
-            return await _context.Breweries.AsNoTracking().ToListAsync();
+            var query = _context.Breweries.AsNoTracking().AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(options?.Search))
+                query = query.Where(b => EF.Functions.Like(b.Name, $"%{options.Search}%"));
+            if (!string.IsNullOrWhiteSpace(options?.City))
+                query = query.Where(b => b.City == options.City);
+
+            if (!string.IsNullOrWhiteSpace(options?.SortBy))
+            {
+                if (options.SortBy.Equals("Name", StringComparison.OrdinalIgnoreCase))
+                    query = options.Ascending ? query.OrderBy(b => b.Name) : query.OrderByDescending(b => b.Name);
+                else if (options.SortBy.Equals("City", StringComparison.OrdinalIgnoreCase))
+                    query = options.Ascending ? query.OrderBy(b => b.City) : query.OrderByDescending(b => b.City);
+            }
+
+            var page = options?.Page ?? 1;
+            var pageSize = options?.PageSize ?? 10;
+            if (page < 1) page = 1;
+            if (pageSize < 1) pageSize = 10;
+            if (pageSize > 100) pageSize = 100;
+
+            var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+            return items;
         }
 
         public async Task<IEnumerable<Brewery?>> GetBreweryByNameAsync(string name)

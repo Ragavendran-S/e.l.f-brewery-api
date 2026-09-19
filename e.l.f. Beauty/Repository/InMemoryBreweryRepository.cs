@@ -30,13 +30,14 @@ public class CachedBreweryRepository : IBreweryRepository
         return res;
     }
 
-    public async Task<IEnumerable<Brewery>> GetBreweriesAsync()
+    public async Task<IEnumerable<Brewery>> GetBreweriesAsync(BreweryQueryOptions options)
     {
-        var result = await _cache.GetOrCreateAsync("breweries", async entry =>
+        var cacheKey = options == null ? "breweries:all" : $"breweries:page={options.Page}:size={options.PageSize}:search={options.Search}:city={options.City}:sort={options.SortBy}";
+        var result = await _cache.GetOrCreateAsync(cacheKey, async entry =>
         {
             entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
             _logger.LogInformation("Cache miss for breweries at {Time}", DateTime.UtcNow);
-            return await _inner.GetBreweriesAsync();
+            return await _inner.GetBreweriesAsync(options);
         });
 
         return result ?? Enumerable.Empty<Brewery>();
@@ -44,7 +45,7 @@ public class CachedBreweryRepository : IBreweryRepository
 
     public async Task<IEnumerable<Brewery>> SearchBreweriesAsync(string query)
     {
-        var result = await _cache.GetOrCreateAsync("Search", async entry =>
+        var result = await _cache.GetOrCreateAsync($"search:{query}", async entry =>
         {
             entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
             _logger.LogInformation("Cache miss for breweries at {Time}", DateTime.UtcNow);

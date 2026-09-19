@@ -6,7 +6,7 @@ namespace e.l.f._Beauty.Repository
 {
     public interface IUpstreamBreweryClient
     {
-        Task<IEnumerable<Brewery>> GetBreweriesAsync();
+        Task<IEnumerable<Brewery>> GetBreweriesAsync(BreweryQueryOptions options);
         Task<IEnumerable<Brewery>> GetBreweryByNameAsync(string name);
         Task<IEnumerable<Brewery>> SearchBreweriesAsync(string query);
         Task<HttpResponseMessage> PostBreweryAsync(Brewery brewery);
@@ -29,14 +29,22 @@ namespace e.l.f._Beauty.Repository
             return JsonSerializer.Deserialize<IEnumerable<Brewery>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? Enumerable.Empty<Brewery>();
         }
 
-        public async Task<IEnumerable<Brewery>> GetBreweriesAsync()
+        public async Task<IEnumerable<Brewery>> GetBreweriesAsync(BreweryQueryOptions options)
         {
+            // The upstream API does not support our full query options. If a search term is provided prefer the
+            // autocomplete/search endpoint. Otherwise fall back to fetching the first page worth of items.
+            if (!string.IsNullOrWhiteSpace(options?.Search))
+            {
+                return await SearchBreweriesAsync(options.Search);
+            }
+
             var response = await _httpClient.GetAsync("https://api.openbrewerydb.org/v1/breweries");
             response.EnsureSuccessStatusCode();
             var json = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<IEnumerable<Brewery>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? Enumerable.Empty<Brewery>();
         }
 
+        // Retained explicitly to preserve search support and interface compatibility.
         public async Task<IEnumerable<Brewery>> SearchBreweriesAsync(string query)
         {
             var response = await _httpClient.GetAsync($"https://api.openbrewerydb.org/v1/breweries/autocomplete?query={Uri.EscapeDataString(query)}");

@@ -34,7 +34,7 @@ namespace e.l.f._Beauty.Services
         {
             try
             {
-                var breweries = await _cache.GetOrFetchAsync("breweries", () => _repository.GetBreweriesAsync());
+                var breweries = await _cache.GetOrFetchAsync("breweries", () => _repository.GetBreweriesAsync(options));
 
                 breweries = _filter.Apply(breweries, options);
 

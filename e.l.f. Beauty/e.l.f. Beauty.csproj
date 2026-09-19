@@ -47,7 +47,6 @@
     <None Remove="Services\Paging\" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Repository\" />
     <Folder Include="Services\" />
     <Folder Include="AutoMapper\" />
     <Folder Include="Services\Filter\" />
