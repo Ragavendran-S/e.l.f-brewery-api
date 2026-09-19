@@ -15,6 +15,7 @@ namespace e.l.f._Beauty.Repository
     public class UpstreamBreweryClient : IUpstreamBreweryClient
     {
         private readonly HttpClient _httpClient;
+        private const string BaseUrl = "https://api.openbrewerydb.org/v1/breweries";
 
         public UpstreamBreweryClient(HttpClient httpClient)
         {
@@ -23,7 +24,9 @@ namespace e.l.f._Beauty.Repository
 
         public async Task<IEnumerable<Brewery>> GetBreweryByNameAsync(string name)
         {
-            var response = await _httpClient.GetAsync($"https://api.openbrewerydb.org/v1/breweries?by_name={Uri.EscapeDataString(name)}");
+            // Build query with proper encoding to avoid injection or malformed URLs
+            var url = Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString(BaseUrl, "by_name", name ?? string.Empty);
+            var response = await _httpClient.GetAsync(url);
             response.EnsureSuccessStatusCode();
             var json = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<IEnumerable<Brewery>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? Enumerable.Empty<Brewery>();
@@ -38,7 +41,7 @@ namespace e.l.f._Beauty.Repository
                 return await SearchBreweriesAsync(options.Search);
             }
 
-            var response = await _httpClient.GetAsync("https://api.openbrewerydb.org/v1/breweries");
+            var response = await _httpClient.GetAsync(BaseUrl);
             response.EnsureSuccessStatusCode();
             var json = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<IEnumerable<Brewery>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? Enumerable.Empty<Brewery>();
@@ -47,7 +50,8 @@ namespace e.l.f._Beauty.Repository
         // Retained explicitly to preserve search support and interface compatibility.
         public async Task<IEnumerable<Brewery>> SearchBreweriesAsync(string query)
         {
-            var response = await _httpClient.GetAsync($"https://api.openbrewerydb.org/v1/breweries/autocomplete?query={Uri.EscapeDataString(query)}");
+            var url = Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString(BaseUrl + "/autocomplete", "query", query ?? string.Empty);
+            var response = await _httpClient.GetAsync(url);
             response.EnsureSuccessStatusCode();
             var json = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<IEnumerable<Brewery>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? Enumerable.Empty<Brewery>();
