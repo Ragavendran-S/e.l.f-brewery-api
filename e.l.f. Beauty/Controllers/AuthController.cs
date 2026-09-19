@@ -68,15 +68,8 @@ namespace e.l.f._Beauty
             return Unauthorized("Signature validation failed");
         }
 
-        byte[] keyBytes;
-        try
-        {
-            keyBytes = Convert.FromBase64String(jwtKey);
-        }
-        catch (FormatException)
-        {
-            keyBytes = Encoding.UTF8.GetBytes(jwtKey);
-        }
+        // Normalize key bytes using shared helper so validation matches issuance/middleware
+        byte[] keyBytes = e.l.f._Beauty.Security.JwtKeyHelper.GetKeyBytes(jwtKey);
 
         var tokenHandler = new JwtSecurityTokenHandler();
         var signingKey = new SymmetricSecurityKey(keyBytes);

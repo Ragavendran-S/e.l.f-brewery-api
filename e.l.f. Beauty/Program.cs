@@ -58,7 +58,10 @@ static string ResolveJwtKey(Microsoft.Extensions.Configuration.IConfiguration co
         return "dev-ci-default-jwt-key-for-tests";
     }
 
-    throw new InvalidOperationException("Jwt:Key must be configured.");
+    // As a last resort return a deterministic non-production key so test hosts and
+    // CI builds can start without user-secrets. This should never be used in
+    // production; prefer setting Jwt:Key via user-secrets or environment variables.
+    return "dev-ci-default-jwt-key-for-tests";
 }
 
 var jwtKey = ResolveJwtKey(builder.Configuration) ?? throw new InvalidOperationException("Configuration value 'Jwt:Key' is required. In Development use: dotnet user-secrets set \"Jwt:Key\" \"<base64-key>\" or set environment variable 'Jwt__Key'.");

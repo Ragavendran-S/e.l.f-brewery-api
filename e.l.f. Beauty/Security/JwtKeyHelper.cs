@@ -43,8 +43,6 @@ namespace e.l.f._Beauty.Security
             Buffer.BlockCopy(partA, 0, combined, 0, partA.Length);
             Buffer.BlockCopy(partB, 0, combined, partA.Length, partB.Length);
             return combined;
-
-            return keyBytes;
         }
     }
 }

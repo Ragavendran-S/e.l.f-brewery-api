@@ -4,6 +4,8 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Authentication;
 using Xunit;
 
 namespace e.l.f._Beauty.Tests.Integration
@@ -69,13 +71,34 @@ namespace e.l.f._Beauty.Tests.Integration
                     };
                     cfg.AddInMemoryCollection(settings!);
                 });
+                // Replace real authentication with a test authentication handler so the
+                // app can be exercised without real JWTs. ConfigureServices runs after
+                // the app's services are registered so this overrides the defaults for tests.
+                builder.ConfigureServices(services =>
+                {
+                    // Add the test auth scheme and make it the default for authentication
+                    services.AddAuthentication(options =>
+                    {
+                        options.DefaultAuthenticateScheme = "Test";
+                        options.DefaultChallengeScheme = "Test";
+                    })
+                    .AddScheme<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, TestAuthHandler>(
+                        "Test", opts => { });
+
+                    services.AddAuthorization(options =>
+                    {
+                        options.DefaultPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
+                            .AddAuthenticationSchemes("Test")
+                            .RequireAuthenticatedUser()
+                            .Build();
+                    });
+                });
             });
 
             var client = factoryWithConfig.CreateClient();
 
-            // Instead of calling the real login endpoint (which requires signing on CI),
-            // use the test auth handler by sending any Bearer token value.
-            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "test-token");
+            // Middleware above injects an authenticated principal for every request,
+            // so protected endpoints can be exercised without auth package wiring.
 
             var protectedResponse = await client.GetAsync("/api/test/protected");
             if (!protectedResponse.IsSuccessStatusCode)

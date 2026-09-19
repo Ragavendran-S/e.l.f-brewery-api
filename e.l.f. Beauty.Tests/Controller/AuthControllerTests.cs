@@ -65,7 +65,7 @@ namespace e.l.f._Beauty.Tests.Controllers
 
             // Validate token using the same key/issuer/audience from configuration
             var handler = new JwtSecurityTokenHandler();
-            var keyBytes = Convert.FromBase64String(_config["Jwt:Key"]!);
+            var keyBytes = e.l.f._Beauty.Security.JwtKeyHelper.GetKeyBytes(_config["Jwt:Key"]!);
             var validationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
