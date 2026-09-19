@@ -67,6 +67,91 @@ Local development with user-secrets (recommended):
 5. dotnet user-secrets set "Auth:Username" "admin"
 6. dotnet user-secrets set "Auth:Password" "password"
 
+Important: Jwt:Key environment variable details
+---------------------------------------------
+This project requires a signing key for JWT issuance and validation. The configuration key is Jwt:Key.
+
+When running the application you must provide a stable, secret signing key to both the issuer (AuthController)
+and any token validation logic. Recommended approaches:
+
+- For local development use dotnet user-secrets as shown above.
+- For local process-level env var (PowerShell):
+
+```powershell
+$env:Jwt__Key = "<base64-key>"
+```
+
+- For Linux/macOS (bash):
+
+```bash
+export Jwt__Key="<base64-key>"
+```
+
+Notes:
+- The double-underscore mapping (Jwt__Key) is required when setting environment variables because IConfiguration
+  maps __ to : (colon) on .NET configuration binding.
+- The Jwt:Key should be a base64-encoded 32-byte or larger random key. Example generator (OpenSSL):
+
+```bash
+openssl rand -base64 32
+```
+
+Why this matters
+-----------------
+If Jwt:Key is not provided the app may start but token issuance and signature validation will not operate correctly.
+Some diagnostic code in this repository intentionally skips signature validation in TokenValidator.cs for demo/test
+purposes; that behavior is documented only as an inline comment in the source and is easy to miss. The section below
+explains the deliberate signature-skip and how to enable full validation.
+
+Deliberate signature-skip in TokenValidator.cs (IMPORTANT)
+--------------------------------------------------------
+Background
+----------
+The repository contains a TokenValidator helper used by the diagnostic Validate token endpoint. During early
+development and for some automated tests the code contains an intentional shortcut that bypasses signature
+validation. This is currently documented only as an inline code comment inside TokenValidator.cs and therefore
+may not be visible to a new developer or an external reviewer.
+
+Risks
+-----
+- Skipping signature validation makes the Validate endpoint and any code that depends on it insecure for real use.
+- If Jwt:Key is not configured or you rely on the diagnostic endpoint without checking TokenValidator.cs, a reviewer
+  might incorrectly assume the project validates signatures in production.
+
+What to do (recommended)
+-------------------------
+1. Treat the inline comment as a red flag. Open TokenValidator.cs and review the implementation before using the
+   diagnostic endpoint in any security-sensitive scenario.
+2. To enable full signature validation ensure Jwt:Key is set (see the section above), then update TokenValidator.cs to
+   validate the signature by configuring TokenValidationParameters with IssuerSigningKey set to a SymmetricSecurityKey
+   constructed from the Jwt:Key value. Example (high-level):
+
+```csharp
+// Pseudocode - adapt to your TokenValidator implementation
+var keyBytes = Convert.FromBase64String(configuration["Jwt:Key"]);
+var signingKey = new SymmetricSecurityKey(keyBytes);
+var tokenParams = new TokenValidationParameters
+{
+	ValidateIssuerSigningKey = true,
+	IssuerSigningKey = signingKey,
+	ValidateIssuer = true,
+	ValidIssuer = configuration["Jwt:Issuer"],
+	ValidateAudience = true,
+	ValidAudience = configuration["Jwt:Audience"]
+};
+// then use JwtSecurityTokenHandler.ValidateToken(..., tokenParams, out _)
+```
+
+3. Add a small integration test that asserts Validate returns Unauthorized when a token is signed with a different key.
+
+4. For production deployments ensure Jwt__Key is injected via a secret store or Key Vault; do not use user-secrets.
+
+Documentation and reviewer guidance
+----------------------------------
+- Make the TokenValidator.cs inline comment visible to reviewers by adding a short note to this README (this section).
+- When opening a pull request that touches auth code, include a checklist item verifying Jwt:Key and TokenValidator
+  configuration are present and correct.
+
 Production and deployment
 -------------------------
 - Never store real production secrets (Jwt:Key) in the repository. Use one of the following approaches to provide the secret to your deployed app:
