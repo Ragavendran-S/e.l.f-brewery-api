@@ -14,14 +14,14 @@ namespace e.l.f._Beauty.Repository
         private readonly BreweryDbContext? _dbContext;
         private readonly ILogger<BreweryRepository> _logger;
 
-        public BreweryRepository(HttpClient httpClient, BreweryDbContext? dbContext = null, ILogger<BreweryRepository>? logger = null)
+        public BreweryRepository(HttpClient httpClient, BreweryDbContext? dbContext, ILogger<BreweryRepository> logger)
         {
             _httpClient = httpClient;
             _dbContext = dbContext;
-            _logger = logger ?? new Microsoft.Extensions.Logging.Abstractions.NullLogger<BreweryRepository>();
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task AddBreweriesAsync(IEnumerable<Brewery> breweries)
+        public async Task<BulkInsertResult> AddBreweriesAsync(IEnumerable<Brewery> breweries)
         {
             if (breweries == null) throw new ArgumentNullException(nameof(breweries));
 
@@ -30,10 +30,16 @@ namespace e.l.f._Beauty.Repository
                 // Delegate to EF Core implementation when a context is available
                 _dbContext.Breweries.AddRange(breweries);
                 await _dbContext.SaveChangesAsync();
-                return;
+                return new BulkInsertResult
+                {
+                    Total = breweries.Count(),
+                    SuccessCount = breweries.Count(),
+                    FailedCount = 0
+                };
             }
 
             // Fall back to posting each item upstream (best-effort) but avoid tight-loop DB inserts.
+            var result = new BulkInsertResult { Total = breweries.Count() };
             foreach (var brewery in breweries)
             {
                 try
@@ -44,15 +50,23 @@ namespace e.l.f._Beauty.Repository
                     if (!response.IsSuccessStatusCode)
                     {
                         _logger.LogWarning("Upstream POST for brewery {Id} returned status {Status}", brewery.Id, response.StatusCode);
+                        result.FailedCount++;
+                        result.Failures.Add(new BulkInsertFailure { BreweryId = brewery.Id, Reason = $"Status {response.StatusCode}" });
+                        continue;
                     }
+                    result.SuccessCount++;
                 }
                 catch (Exception ex)
                 {
                     // Log failures for diagnostics but continue with the next item to preserve
                     // best-effort behavior for bulk operations.
                     _logger.LogError(ex, "Failed to POST brewery {Id} to upstream API; continuing with others", brewery.Id);
+                    result.FailedCount++;
+                    result.Failures.Add(new BulkInsertFailure { BreweryId = brewery.Id, Reason = ex.Message });
                 }
             }
+
+            return result;
         }
 
         public async Task AddBreweryAsync(Brewery brewery)

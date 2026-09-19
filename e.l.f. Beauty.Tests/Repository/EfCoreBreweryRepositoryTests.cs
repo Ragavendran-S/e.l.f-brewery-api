@@ -32,13 +32,15 @@ namespace e.l.f._Beauty.Tests.Repository
                 new Brewery { Id = "c3", Name = "Gamma" }
             };
 
-            await repo.AddBreweriesAsync(items);
+            var res = await repo.AddBreweriesAsync(items);
 
             var persisted = await ctx.Breweries.AsNoTracking().ToListAsync();
             Assert.Equal(3, persisted.Count);
             Assert.Contains(persisted, b => b.Name == "Alpha");
             Assert.Contains(persisted, b => b.Name == "Beta");
             Assert.Contains(persisted, b => b.Name == "Gamma");
+            Assert.Equal(3, res.SuccessCount);
+            Assert.Equal(0, res.FailedCount);
         }
     }
 }

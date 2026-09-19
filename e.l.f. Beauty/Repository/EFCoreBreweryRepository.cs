@@ -31,13 +31,19 @@ namespace ElfBreweryApi.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task AddBreweriesAsync(IEnumerable<Brewery> breweries)
+        public async Task<BulkInsertResult> AddBreweriesAsync(IEnumerable<Brewery> breweries)
         {
             if (breweries == null) throw new ArgumentNullException(nameof(breweries));
 
             // Use AddRange for efficient batching and commit once.
             _context.Breweries.AddRange(breweries);
             await _context.SaveChangesAsync();
+            return new BulkInsertResult
+            {
+                Total = breweries.Count(),
+                SuccessCount = breweries.Count(),
+                FailedCount = 0
+            };
         }
 
         public Task<IEnumerable<Brewery>> SearchBreweriesAsync(string query)
