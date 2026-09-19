@@ -61,13 +61,71 @@ Configuration and secrets
   - Jwt:Audience — audience string for tokens
   - Auth:Username / Auth:Password (optional) or AUTH_USERNAME / AUTH_PASSWORD env vars
 
-Local development with user-secrets (recommended):
-1. dotnet user-secrets init
-2. dotnet user-secrets set "Jwt:Key" "$(openssl rand -base64 32)"  # or set a base64 string on Windows accordingly
-3. dotnet user-secrets set "Jwt:Issuer" "brewery-api"
-4. dotnet user-secrets set "Jwt:Audience" "brewery-api"
-5. dotnet user-secrets set "Auth:Username" "admin"
-6. dotnet user-secrets set "Auth:Password" "password"
+Fresh clone setup (step-by-step, recommended)
+---------------------------------------------
+Use these commands after cloning so the API can issue and validate JWTs locally.
+
+1. Open a terminal at repository root, then move to the web project:
+
+```powershell
+cd "e.l.f. Beauty"
+```
+
+2. Initialize user-secrets for this project (one-time per machine/project):
+
+```powershell
+dotnet user-secrets init
+```
+
+3. Set required secrets (PowerShell):
+
+```powershell
+dotnet user-secrets set "Jwt:Key" "$(openssl rand -base64 32)"
+dotnet user-secrets set "Jwt:Issuer" "brewery-api"
+dotnet user-secrets set "Jwt:Audience" "brewery-api"
+dotnet user-secrets set "Auth:Username" "admin"
+dotnet user-secrets set "Auth:Password" "password"
+```
+
+4. If OpenSSL is unavailable on Windows, generate Jwt:Key in PowerShell:
+
+```powershell
+dotnet user-secrets set "Jwt:Key" "$([Convert]::ToBase64String((1..32 | ForEach-Object { Get-Random -Minimum 0 -Maximum 256 } | ForEach-Object { [byte]$_ })))"
+```
+
+5. Start the API:
+
+```powershell
+dotnet run --project "e.l.f-brewery-api.csproj"
+```
+
+Alternative (env vars instead of user-secrets)
+----------------------------------------------
+PowerShell (current shell):
+
+```powershell
+$env:Jwt__Key = "<base64-key>"
+$env:Jwt__Issuer = "brewery-api"
+$env:Jwt__Audience = "brewery-api"
+$env:AUTH_USERNAME = "admin"
+$env:AUTH_PASSWORD = "password"
+```
+
+Bash (macOS/Linux):
+
+```bash
+export Jwt__Key="<base64-key>"
+export Jwt__Issuer="brewery-api"
+export Jwt__Audience="brewery-api"
+export AUTH_USERNAME="admin"
+export AUTH_PASSWORD="password"
+```
+
+Why this is required
+--------------------
+- Login and token validation depend on Jwt:Key/Jwt:Issuer/Jwt:Audience. Without them, JWT signing or validation will fail.
+- user-secrets is the safest local default because secrets stay out of source control.
+- Using the commands above ensures a fresh clone can build, run, and authenticate without extra undocumented setup.
 
 Important: Jwt:Key environment variable details
 ---------------------------------------------
