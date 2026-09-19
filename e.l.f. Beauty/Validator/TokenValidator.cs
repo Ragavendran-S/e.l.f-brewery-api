@@ -35,96 +35,70 @@ namespace e.l.f._Beauty
             throw new InvalidOperationException("JWT signing key is not configured");
         }
 
+        // Use JwtKeyHelper so validation uses the same normalization as issuance/runtime
         byte[] keyBytes;
         try
         {
-            keyBytes = Convert.FromBase64String(jwtKey);
+            keyBytes = e.l.f._Beauty.Security.JwtKeyHelper.GetKeyBytes(jwtKey!);
         }
-        catch (FormatException)
+        catch (Exception ex)
         {
-            _logger.LogWarning(EventIds.JwtKeyWarning, "JWT key is not Base64 encoded; attempting to use raw string bytes");
-            keyBytes = Encoding.UTF8.GetBytes(jwtKey);
+            _logger.LogWarning(EventIds.JwtKeyWarning, ex, "Failed to normalize JWT key: {Message}", ex.Message);
+            throw;
         }
 
-        // Manual validator: parse token and validate iss/aud/exp. Do not throw on malformed or invalid tokens;
-        // instead log and return so callers (controllers) can respond appropriately.
+        // Use JwtSecurityTokenHandler to validate signature, issuer, audience and lifetime.
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var signingKey = new SymmetricSecurityKey(keyBytes);
+
+        var validationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = signingKey,
+            ValidateIssuer = !string.IsNullOrEmpty(jwtIssuer),
+            ValidIssuer = jwtIssuer,
+            ValidateAudience = !string.IsNullOrEmpty(jwtAudience),
+            ValidAudience = jwtAudience,
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero
+        };
+
         try
         {
-            ManualValidate(token, keyBytes, jwtIssuer, jwtAudience, validateLifetime: true);
-            _logger.LogInformation(EventIds.TokenValidation, "Token validated successfully (manual) for issuer {Issuer}", jwtIssuer);
+            tokenHandler.ValidateToken(token, validationParameters, out var validatedToken);
+            _logger.LogInformation(EventIds.TokenValidation, "Token validated successfully for issuer {Issuer}", jwtIssuer);
+        }
+        catch (SecurityTokenExpiredException ex)
+        {
+            _logger.LogWarning(EventIds.TokenValidationFailed, ex, "Token expired: {Message}", ex.Message);
+            return;
+        }
+        catch (SecurityTokenInvalidSignatureException ex)
+        {
+            _logger.LogWarning(EventIds.TokenValidationFailed, ex, "Signature validation failed: {Message}", ex.Message);
+            return;
         }
         catch (SecurityTokenException ex)
         {
-            // Log the issue but do not throw so controller endpoints can return Ok and rely on logs
-            _logger.LogWarning(EventIds.TokenValidationFailed, ex, "Token validation failed (non-fatal): {Message}", ex.Message);
+            // includes malformed token and other security token exceptions
+            _logger.LogWarning(EventIds.TokenValidationFailed, ex, "Token validation failed: {Message}", ex.Message);
+            // For diagnostics, attempt to log token header/payload (safe-truncated)
+            try
+            {
+                var parts = token?.Split('.');
+                if (parts != null && parts.Length >= 2)
+                {
+                    string header = parts[0];
+                    string payload = parts[1];
+                    string safeHeader = header.Length > 64 ? header.Substring(0, 64) + "..." : header;
+                    string safePayload = payload.Length > 128 ? payload.Substring(0, 128) + "..." : payload;
+                    _logger.LogDebug(EventIds.TokenValidationFailed, "Token header (truncated): {Header}", safeHeader);
+                    _logger.LogDebug(EventIds.TokenValidationFailed, "Token payload (truncated): {Payload}", safePayload);
+                }
+            }
+            catch { }
             return;
         }
     }
-
-
-    // Helper methods for manual signature verification
-    static byte[] Base64UrlDecode(string input)
-    {
-        string s = input.Replace('-', '+').Replace('_', '/');
-        switch (s.Length % 4)
-        {
-            case 2: s += "=="; break;
-            case 3: s += "="; break;
-        }
-        return Convert.FromBase64String(s);
     }
-
-    static bool CryptographicEquals(byte[] a, byte[] b)
-    {
-        if (a.Length != b.Length) return false;
-        int diff = 0;
-        for (int i = 0; i < a.Length; i++) diff |= a[i] ^ b[i];
-        return diff == 0;
-    }
-
-        static void ManualValidate(string token, byte[] keyBytes, string? expectedIssuer, string? expectedAudience, bool validateLifetime)
-        {
-            var parts = token.Split('.');
-            if (parts.Length != 3) throw new SecurityTokenException("Invalid token format");
-
-            // Validate signature using HMAC-SHA256 (common JWT algorithm). This ensures that a token
-            // with forged claims but no valid signature is rejected.
-            try
-            {
-                var ascii = Encoding.ASCII.GetBytes(parts[0] + "." + parts[1]);
-                var signatureBytes = Base64UrlDecode(parts[2]);
-                using var hmac = new System.Security.Cryptography.HMACSHA256(keyBytes);
-                var computed = hmac.ComputeHash(ascii);
-                if (!CryptographicEquals(computed, signatureBytes))
-                {
-                    throw new SecurityTokenInvalidSignatureException("Signature validation failed");
-                }
-            }
-            catch (FormatException ex)
-            {
-                throw new SecurityTokenException("Invalid signature encoding", ex);
-            }
-
-            var payload = Encoding.UTF8.GetString(Base64UrlDecode(parts[1]));
-
-            // Parse payload JSON and validate issuer/audience/expiry
-            var doc = JsonDocument.Parse(payload);
-            if (expectedIssuer != null && doc.RootElement.TryGetProperty("iss", out var iss))
-            {
-                if (iss.GetString() != expectedIssuer) throw new SecurityTokenException("Issuer mismatch");
-            }
-            if (expectedAudience != null && doc.RootElement.TryGetProperty("aud", out var aud))
-            {
-                if (aud.GetString() != expectedAudience) throw new SecurityTokenException("Audience mismatch");
-            }
-            if (validateLifetime && doc.RootElement.TryGetProperty("exp", out var exp))
-            {
-                var seconds = exp.GetInt64();
-                var expiry = DateTimeOffset.FromUnixTimeSeconds(seconds).UtcDateTime;
-                if (expiry < DateTime.UtcNow) throw new SecurityTokenExpiredException("Token expired");
-            }
-        }
-}
-
-
 }

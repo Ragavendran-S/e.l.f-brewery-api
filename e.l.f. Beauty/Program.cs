@@ -68,8 +68,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             }
         };
         // Validate jwtKey early with a clear error message so startup fails fast if misconfigured.
-        //var keyBytes = JwtKeyValidator.ValidateAndGetKeyBytes(jwtKey);
-        var keyBytes = Encoding.UTF8.GetBytes(jwtKey);
+        // Normalize key bytes using JwtKeyHelper so runtime uses the same bytes as token issuance
+        var keyBytes = e.l.f._Beauty.Security.JwtKeyHelper.GetKeyBytes(jwtKey);
         options.TokenValidationParameters = new TokenValidationParameters
 
         {

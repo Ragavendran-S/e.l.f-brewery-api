@@ -133,5 +133,54 @@ namespace e.l.f._Beauty.Tests.Controllers
             Assert.Equal("Check console logs for validation result", ok.Value);
         }
 
+        [Fact]
+        public void Login_Ignores_Windows_USERNAME_Env_Var_Uses_Defaults()
+        {
+            // Arrange: simulate Windows '%USERNAME%' presence but no AUTH_* configured
+            var prevAuthUser = Environment.GetEnvironmentVariable("AUTH_USERNAME");
+            var prevAuthPass = Environment.GetEnvironmentVariable("AUTH_PASSWORD");
+            var prevUsername = Environment.GetEnvironmentVariable("USERNAME");
+            try
+            {
+                Environment.SetEnvironmentVariable("AUTH_USERNAME", null);
+                Environment.SetEnvironmentVariable("AUTH_PASSWORD", null);
+                Environment.SetEnvironmentVariable("USERNAME", "WindowsHostUser");
+
+                // Build in-memory configuration with a Base64 256-bit key (no Auth:Username provided)
+                var keyBytes = RandomNumberGenerator.GetBytes(32);
+                var base64Key = Convert.ToBase64String(keyBytes);
+
+                var inMemory = new System.Collections.Generic.Dictionary<string, string?>
+                {
+                    ["Jwt:Key"] = base64Key,
+                    ["Jwt:Issuer"] = "brewery-api",
+                    ["Jwt:Audience"] = "brewery-api"
+                };
+
+                var config = new ConfigurationBuilder()
+                    .AddInMemoryCollection(inMemory)
+                    .Build();
+
+                var validator = new TokenValidator(config);
+                var controller = new AuthController(config, validator);
+
+                var model = new LoginModel { Username = "admin", Password = "password" };
+
+                // Act
+                var result = controller.Login(model);
+
+                // Assert: should still accept the explicit default admin/password and ignore the OS USERNAME
+                var ok = Assert.IsType<OkObjectResult>(result);
+                Assert.NotNull(ok.Value);
+            }
+            finally
+            {
+                // Restore environment
+                Environment.SetEnvironmentVariable("AUTH_USERNAME", prevAuthUser);
+                Environment.SetEnvironmentVariable("AUTH_PASSWORD", prevAuthPass);
+                Environment.SetEnvironmentVariable("USERNAME", prevUsername);
+            }
+        }
+
     }
 }

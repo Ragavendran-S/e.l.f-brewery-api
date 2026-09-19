@@ -174,24 +174,7 @@ namespace e.l.f._Beauty
         {
             throw new InvalidOperationException("JWT Key is not configured.");
         }
-        byte[] keyBytes;
-        try
-        {
-            // First try Base64 decode (tests provide a Base64 key)
-            keyBytes = Convert.FromBase64String(keyByte!);
-        }
-        catch (FormatException)
-        {
-            // Fallback to raw UTF8 bytes if not Base64
-            keyBytes = Encoding.UTF8.GetBytes(keyByte!);
-        }
-        // Ensure minimum key size for HMAC-SHA256 (128 bits). If the provided key is shorter,
-        // derive a 256-bit key deterministically by hashing the input so signing/validation remain consistent.
-        if (keyBytes.Length < 16)
-        {
-            using var sha = System.Security.Cryptography.SHA256.Create();
-            keyBytes = sha.ComputeHash(keyBytes);
-        }
+        var keyBytes = e.l.f._Beauty.Security.JwtKeyHelper.GetKeyBytes(keyByte!);
         var symmetricKey = new SymmetricSecurityKey(keyBytes);
         var credentials = new SigningCredentials(symmetricKey, SecurityAlgorithms.HmacSha256);
 
