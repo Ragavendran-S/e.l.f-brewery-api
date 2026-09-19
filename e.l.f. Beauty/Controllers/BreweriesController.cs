@@ -18,7 +18,7 @@ namespace e.l.f._Beauty.Controllers
 {
     [ApiController]
     [ApiVersion("1.0")]
-    [Route("api/v{version:apiVersion}/Breweries")]
+    [Route("api/v{version:apiVersion}/breweries")]
     [ApiExplorerSettings(GroupName = "v1")]
     [Authorize]
     public class BreweriesController : ControllerBase
@@ -43,7 +43,6 @@ namespace e.l.f._Beauty.Controllers
         }
 
         [HttpGet]
-     
         public async Task<ActionResult<PagedResult<Brewery>>> GetBreweries([FromQuery] BreweryQueryOptions options)
         {
             var result = await _service.GetBreweriesAsync(options);
