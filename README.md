@@ -166,6 +166,17 @@ For production deployments with large breweries tables consider:
 
 All migration and index changes should be tested on a staging environment before applying to production.
 
+URL encoding tests
+------------------
+To ensure upstream requests are constructed safely the repository contains unit tests that
+record outgoing HttpClient requests and assert query parameters are decoded to the original
+values (not just raw percent-encoded strings). These tests guard against regressions when
+building request URLs and ensure values with spaces/special characters are handled correctly.
+
+Relevant test files:
+- e.l.f. Beauty.Tests/Repository/UpstreamBreweryClientUrlEncodingTests.cs
+
+
 
 Alternative (env vars instead of user-secrets)
 ----------------------------------------------
