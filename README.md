@@ -33,6 +33,8 @@ Architecture and key components
 - Services
   - BreweryService: orchestrates external calls, filtering and sorting.
   - DistanceSorter: implements Haversine distance calculation and ordering.
+  - Sorting factory: BrewerySorterFactory now exposes a single canonical GetSorter method; Create forwards to GetSorter.
+	This consolidates sorter selection semantics for Name/City/Distance and prevents ambiguous behavior.
 - Mapping
   - AutoMapper profiles (AutoMapper/BreweryProfile.cs) map ExternalBrewery -> Brewery and BreweryResponse.
   - ExternalBrewery models match the fields returned by Open Brewery DB (including latitude/longitude strings).
