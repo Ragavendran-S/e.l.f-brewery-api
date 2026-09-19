@@ -115,6 +115,27 @@ The script will change directory into the "e.l.f. Beauty" project (where UserSec
 before running `dotnet user-secrets`. Do not commit real secrets; replace placeholders with
 secure values before using the API for anything other than local testing.
 
+Database-backed paging
+-----------------------
+This project now supports database-backed paging for the breweries listing. When a local database
+is configured (via the project's connection string) the repository implementations will apply
+filters, sorting and paging at the database level to avoid loading the entire table into memory.
+
+What changed:
+- IBreweryRepository.GetBreweriesAsync now accepts BreweryQueryOptions so EF implementations can
+  apply SQL-side Skip/Take and filtering.
+- EFCoreBreweryRepository and BreweryRepository (when a DbContext is available) use EF.Functions.Like
+  and Skip/Take to perform efficient queries.
+
+When to expect DB-backed behavior:
+- If you run the app with a SQLite or other supported connection string the API will query the DB
+  and return only the requested page of results. If no DB is present, the repository will fallback
+  to upstream lookups and service-level paging remains a fallback.
+
+No action required for local development when using the provided test database. If you run into
+performance issues with very large datasets consider adding indexes on Name/City fields in your
+database.
+
 
 Alternative (env vars instead of user-secrets)
 ----------------------------------------------
