@@ -155,6 +155,13 @@ Testing notes and suggestions
 - Unit tests include mapping assertions that ensure ExternalBrewery.latitude/longitude are parsed to double? and used
   by DistanceSorter. If you add new fields to the external API model, update AutoMapper/BreweryProfile accordingly.
 - If tests fail related to environment variables, ensure user-secrets or process env vars are configured for the test run.
+  your Jwt:Key and other secrets are set via user-secrets or environment variables before running tests.
+
+Service behavior: filtering and autocomplete
+-----------------------------------------
+- BreweryService.SearchBreweriesAsync delegates filtering to the repository implementation and does not apply additional in-memory filtering. This avoids duplicate filtering when the upstream API already returns filtered results. Repository implementations should return results already filtered for the provided query.
+
+- BreweryService.AutocompleteAsync now uses a per-query cache key (autocomplete:{query}) and calls repository.SearchBreweriesAsync(query). Earlier versions used a hardcoded "breweries" cache key, which caused autocomplete results to collide with the main breweries list cache. Tests cover the corrected behavior.
 
 Troubleshooting and known limitations
 ------------------------------------
