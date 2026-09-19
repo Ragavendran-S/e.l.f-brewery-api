@@ -205,3 +205,8 @@ app.MapControllers();
 
 app.Run();
 
+// Provide a public Program class so integration tests via WebApplicationFactory<Program>
+// can reference the entry point assembly. This pattern is common when using top-level
+// statements in Program.cs.
+public partial class Program { }
+
