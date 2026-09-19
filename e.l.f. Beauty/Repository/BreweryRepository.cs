@@ -19,6 +19,35 @@ namespace e.l.f._Beauty.Repository
             _dbContext = dbContext;
         }
 
+        public async Task AddBreweriesAsync(IEnumerable<Brewery> breweries)
+        {
+            if (breweries == null) throw new ArgumentNullException(nameof(breweries));
+
+            if (_dbContext != null)
+            {
+                // Delegate to EF Core implementation when a context is available
+                _dbContext.Breweries.AddRange(breweries);
+                await _dbContext.SaveChangesAsync();
+                return;
+            }
+
+            // Fall back to posting each item upstream (best-effort) but avoid tight-loop DB inserts.
+            foreach (var brewery in breweries)
+            {
+                try
+                {
+                    var json = JsonSerializer.Serialize(brewery);
+                    using var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+                    var response = await _httpClient.PostAsync("/v1/breweries", content);
+                    // ignore failures to preserve best-effort behavior
+                }
+                catch
+                {
+                    // swallow
+                }
+            }
+        }
+
         public async Task AddBreweryAsync(Brewery brewery)
         {
             if (brewery == null) throw new ArgumentNullException(nameof(brewery));

@@ -14,6 +14,21 @@ public class CachedBreweryRepository : IBreweryRepository
         _logger = logger;
     }
 
+    public async Task AddBreweriesAsync(IEnumerable<Brewery> breweries)
+    {
+        if (breweries == null) throw new ArgumentNullException(nameof(breweries));
+        // Delegate to inner repository which may support bulk operations
+        await _inner.AddBreweriesAsync(breweries);
+
+        // Invalidate caches
+        _cache.Remove("breweries");
+        foreach (var b in breweries)
+        {
+            _cache.Remove($"brewery:{b.Id}");
+        }
+        _logger.LogInformation("Cache invalidated after adding breweries at {Time}", DateTime.UtcNow);
+    }
+
     public async Task<IEnumerable<Brewery>> GetBreweriesAsync()
     {
         var result = await _cache.GetOrCreateAsync("breweries", async entry =>

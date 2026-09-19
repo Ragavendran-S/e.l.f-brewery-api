@@ -31,6 +31,15 @@ namespace ElfBreweryApi.Repositories
             await _context.SaveChangesAsync();
         }
 
+        public async Task AddBreweriesAsync(IEnumerable<Brewery> breweries)
+        {
+            if (breweries == null) throw new ArgumentNullException(nameof(breweries));
+
+            // Use AddRange for efficient batching and commit once.
+            _context.Breweries.AddRange(breweries);
+            await _context.SaveChangesAsync();
+        }
+
         public Task<IEnumerable<Brewery>> SearchBreweriesAsync(string query)
         {
             throw new NotImplementedException();
