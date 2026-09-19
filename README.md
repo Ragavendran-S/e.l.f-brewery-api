@@ -99,6 +99,23 @@ dotnet user-secrets set "Jwt:Key" "$([Convert]::ToBase64String((1..32 | ForEach-
 dotnet run --project "e.l.f-brewery-api.csproj"
 ```
 
+Using the included init script
+--------------------------------
+If you prefer a convenience script, this repository includes a PowerShell helper that initialises
+dotnet user-secrets for the web project and can optionally write placeholder values.
+
+From the repository root run (PowerShell):
+
+```powershell
+./scripts/init-dev-env.ps1         # interactive prompts
+./scripts/init-dev-env.ps1 -NonInteractive  # create placeholder values non-interactively
+```
+
+The script will change directory into the "e.l.f. Beauty" project (where UserSecretsId is declared)
+before running `dotnet user-secrets`. Do not commit real secrets; replace placeholders with
+secure values before using the API for anything other than local testing.
+
+
 Alternative (env vars instead of user-secrets)
 ----------------------------------------------
 PowerShell (current shell):
