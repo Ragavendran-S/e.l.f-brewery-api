@@ -136,7 +136,9 @@ builder.Services.AddControllers();
 builder.Services.AddMemoryCache();
 // Register in-memory brewery cache implementation
 builder.Services.AddScoped<IBreweryCache, MemoryBreweryCache>();
-builder.Services.AddHttpClient<IBreweryRepository, BreweryRepository>();
+builder.Services.AddHttpClient<IUpstreamBreweryClient, UpstreamBreweryClient>();
+// BreweryRepository depends on IUpstreamBreweryClient, BreweryDbContext, ILogger<BreweryRepository>, and IPagingHelper
+builder.Services.AddScoped<IBreweryRepository, BreweryRepository>();
 builder.Services.AddScoped<IBreweryService, BreweryService>();
 builder.Services.AddScoped<IBreweryFilter, BreweryFilter>();
 builder.Services.AddScoped<IBrewerySorterFactory, BrewerySorterFactory>();

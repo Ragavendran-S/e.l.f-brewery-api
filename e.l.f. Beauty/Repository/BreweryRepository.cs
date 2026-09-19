@@ -5,6 +5,7 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 using e.l.f.Validation;
+using e.l.f._Beauty.Services;
 
 namespace e.l.f._Beauty.Repository
 {
@@ -13,12 +14,14 @@ namespace e.l.f._Beauty.Repository
         private readonly IUpstreamBreweryClient _upstream;
         private readonly BreweryDbContext? _dbContext;
         private readonly ILogger<BreweryRepository> _logger;
+        private readonly IPagingHelper _pagingHelper;
 
-        public BreweryRepository(IUpstreamBreweryClient upstream, BreweryDbContext? dbContext, ILogger<BreweryRepository> logger)
+        public BreweryRepository(IUpstreamBreweryClient upstream, BreweryDbContext? dbContext, ILogger<BreweryRepository> logger, IPagingHelper pagingHelper)
         {
             _upstream = upstream ?? throw new ArgumentNullException(nameof(upstream));
             _dbContext = dbContext;
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _pagingHelper = pagingHelper ?? throw new ArgumentNullException(nameof(pagingHelper));
         }
 
         public async Task<BulkInsertResult> AddBreweriesAsync(IEnumerable<Brewery> breweries)
@@ -119,11 +122,9 @@ namespace e.l.f._Beauty.Repository
                 // Instead apply simple paging logic to the IQueryable to keep DB-side pagination.
                 var page = options?.Page ?? 1;
                 var pageSize = options?.PageSize ?? 10;
-                if (page < 1) page = 1;
-                if (pageSize < 1) pageSize = 10;
-                if (pageSize > 100) pageSize = 100;
 
-                var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+                var pagedQuery = _pagingHelper.ApplyPaging(query, page, pageSize);
+                var items = await pagedQuery.ToListAsync();
                 return items;
             }
 

@@ -18,7 +18,8 @@ public class BreweryRepositoryFailuresTests
         var client = new HttpClient(handler) { BaseAddress = new Uri("https://example.test") };
         var upstream = new e.l.f._Beauty.Repository.UpstreamBreweryClient(client);
         var logger = new NullLogger<BreweryRepository>();
-        var repo = new e.l.f._Beauty.Repository.BreweryRepository(upstream, null, logger);
+        // passing a dummy PagingHelper for test purposes
+        var repo = new e.l.f._Beauty.Repository.BreweryRepository(upstream, null, logger, new e.l.f._Beauty.Services.PagingHelper());
 
         var brewery = new Brewery { Id = "x1", Name = "Fail" };
 

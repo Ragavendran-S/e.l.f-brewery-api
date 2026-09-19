@@ -10,6 +10,7 @@ namespace ElfBreweryApi.Repositories
     {
         private readonly BreweryDbContext _context;
 
+        // EF repository applies paging within query methods and does not require a paging helper dependency.
         public EfCoreBreweryRepository(BreweryDbContext context)
         {
             _context = context;
