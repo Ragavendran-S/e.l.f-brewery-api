@@ -13,23 +13,36 @@ namespace e.l.f._Beauty.Security
         {
             if (string.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
 
-            byte[] keyBytes;
+            // Try to decode a Base64 key first. If decoded key is long enough (>=128 bytes)
+            // return it directly. Otherwise derive a deterministic 128-byte key by
+            // repeated SHA-512 hashing and concatenation. A 128-byte key avoids
+            // provider key-size validation issues across platforms for HMAC algorithms.
             try
             {
-                keyBytes = Convert.FromBase64String(key);
+                var decoded = Convert.FromBase64String(key);
+                if (decoded.Length >= 128)
+                {
+                    return decoded;
+                }
+
+                // If decoded key is shorter, fall through to deterministic expansion below
             }
             catch (FormatException)
             {
-                keyBytes = Encoding.UTF8.GetBytes(key);
+                // not Base64, fall through to hashing
             }
 
-            // Ensure minimum key size for HMAC-SHA256 (128 bits). If the provided key is shorter,
-            // derive a 256-bit key deterministically by hashing the input so signing/validation remain consistent.
-            if (keyBytes.Length < 16)
-            {
-                using var sha = SHA256.Create();
-                keyBytes = sha.ComputeHash(keyBytes);
-            }
+            // Deterministically expand to 128 bytes: compute SHA-512 of the key and
+            // SHA-512 of the key with a constant suffix, then concatenate results.
+            using var shaA = SHA512.Create();
+            var partA = shaA.ComputeHash(Encoding.UTF8.GetBytes(key));
+            using var shaB = SHA512.Create();
+            var partB = shaB.ComputeHash(Encoding.UTF8.GetBytes(key + "::expand"));
+
+            var combined = new byte[partA.Length + partB.Length];
+            Buffer.BlockCopy(partA, 0, combined, 0, partA.Length);
+            Buffer.BlockCopy(partB, 0, combined, partA.Length, partB.Length);
+            return combined;
 
             return keyBytes;
         }
