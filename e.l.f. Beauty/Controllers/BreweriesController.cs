@@ -50,15 +50,8 @@ namespace e.l.f._Beauty.Controllers
             return Ok(result);
         }
 
-        [HttpGet("breweries")]
-        public async Task<IActionResult> GetBreweries(int page = 1, int pageSize = 10)
-        {
-            var query = _dbContext.Breweries.AsQueryable();
-            var paged = _pagingHelper.ApplyPaging(query, page, pageSize);
-
-            var items = await paged.ToListAsync();
-            return Ok(new PagedResult<Brewery>(items, page, pageSize, _dbContext.Breweries.Count()));
-        }
+        // Duplicate DbContext-backed endpoint removed. All listing endpoints must use the service pipeline
+        // (GetBreweries([FromQuery] BreweryQueryOptions)) to ensure consistent caching, filtering and sorting.
 
         [HttpGet("autocomplete")]
         public async Task<IActionResult> Autocomplete([FromQuery] string query)
