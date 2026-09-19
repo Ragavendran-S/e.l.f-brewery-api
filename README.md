@@ -136,6 +136,36 @@ No action required for local development when using the provided test database. 
 performance issues with very large datasets consider adding indexes on Name/City fields in your
 database.
 
+Repository wrapper behavior & tests
+----------------------------------
+The BreweryRepository acts as a wrapper that prefers a local DbContext-backed data path when a
+database is available. When BreweryDbContext is injected the repository performs SQL-side
+filtering, sorting and paging; if no DbContext is present it falls back to the upstream HTTP
+client. Unit tests have been added to validate both behaviors:
+
+- e.l.f. Beauty.Tests/Repository/EfCoreBreweryRepositoryPagingTests.cs — verifies EF paging
+- e.l.f. Beauty.Tests/Repository/BreweryRepositoryWrapperTests.cs — verifies DB path and upstream fallback
+
+These tests run as part of the regular test suite and are included in the CI workflow.
+
+Database indexing & migrations
+-----------------------------
+For production deployments with large breweries tables consider:
+
+- Adding indexes on commonly filtered/sorted columns to improve query performance. For example:
+
+  - CREATE INDEX IX_Breweries_Name ON Breweries(Name);
+  - CREATE INDEX IX_Breweries_City ON Breweries(City);
+
+- Applying EF Core migrations to maintain schema. Use:
+
+  ```powershell
+  dotnet ef migrations add InitialCreate --project "e.l.f. Beauty" --startup-project "e.l.f. Beauty"
+  dotnet ef database update --project "e.l.f. Beauty" --startup-project "e.l.f. Beauty"
+  ```
+
+All migration and index changes should be tested on a staging environment before applying to production.
+
 
 Alternative (env vars instead of user-secrets)
 ----------------------------------------------
