@@ -12,11 +12,13 @@ namespace e.l.f._Beauty.Repository
     {
         private readonly HttpClient _httpClient;
         private readonly BreweryDbContext? _dbContext;
+        private readonly ILogger<BreweryRepository> _logger;
 
-        public BreweryRepository(HttpClient httpClient, BreweryDbContext? dbContext = null)
+        public BreweryRepository(HttpClient httpClient, BreweryDbContext? dbContext = null, ILogger<BreweryRepository>? logger = null)
         {
             _httpClient = httpClient;
             _dbContext = dbContext;
+            _logger = logger ?? new Microsoft.Extensions.Logging.Abstractions.NullLogger<BreweryRepository>();
         }
 
         public async Task AddBreweriesAsync(IEnumerable<Brewery> breweries)
@@ -39,11 +41,16 @@ namespace e.l.f._Beauty.Repository
                     var json = JsonSerializer.Serialize(brewery);
                     using var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
                     var response = await _httpClient.PostAsync("/v1/breweries", content);
-                    // ignore failures to preserve best-effort behavior
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        _logger.LogWarning("Upstream POST for brewery {Id} returned status {Status}", brewery.Id, response.StatusCode);
+                    }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // swallow
+                    // Log failures for diagnostics but continue with the next item to preserve
+                    // best-effort behavior for bulk operations.
+                    _logger.LogError(ex, "Failed to POST brewery {Id} to upstream API; continuing with others", brewery.Id);
                 }
             }
         }
@@ -70,14 +77,17 @@ namespace e.l.f._Beauty.Repository
                 // Treat non-success as a no-op but surface for diagnostics
                 if (!response.IsSuccessStatusCode)
                 {
+                    _logger.LogWarning("Upstream POST for brewery {Id} returned status {Status}", brewery.Id, response.StatusCode);
                     // Do not throw here to avoid breaking callers when upstream is read-only.
                     return;
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Swallow exceptions for best-effort behavior; callers relying on persistence
-                // should use an EFCore-backed repository.
+                // Log and rethrow so callers are aware of persistent failures. Use 'throw;' to
+                // preserve the original stack trace rather than 'throw ex'.
+                _logger.LogError(ex, "Failed to POST brewery {Id} to upstream API", brewery.Id);
+                throw;
             }
         }
 
