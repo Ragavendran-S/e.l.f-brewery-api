@@ -111,6 +111,7 @@ The Login endpoint prefers values from IConfiguration (for example, user-secrets
 Example code used in AuthController.Login:
 
 ```csharp
+<<<<<<< HEAD
 // The controller prefers IConfiguration (user-secrets) and AUTH_* env vars.
 // It intentionally avoids falling back to generic 'Username'/'Password'
 // environment variable names because Windows defines a built-in %USERNAME%
@@ -131,6 +132,20 @@ to accept the OS account as the credential instead of the intended default
 `admin`. For predictable behavior prefer `Auth:Username` via user-secrets or
 the explicit `AUTH_USERNAME`/`AUTH_PASSWORD` environment variables.
 
+=======
+string? expectedUsername = _config["Auth:Username"]
+                ?? _config["AUTH_USERNAME"]
+                ?? _config["Username"]
+                ?? ReadEnv("AUTH_USERNAME")
+                ?? ReadEnv("Username");
+string? expectedPassword = _config["Auth:Password"]
+                ?? _config["AUTH_PASSWORD"]
+                ?? _config["Password"]
+                ?? ReadEnv("AUTH_PASSWORD")
+                ?? ReadEnv("Password");
+```
+
+>>>>>>> 08529c0 (Docs: document AuthController credential resolution and examples for user-secrets/env vars)
 Set these values with user-secrets (recommended for local development):
 
 ```bash
