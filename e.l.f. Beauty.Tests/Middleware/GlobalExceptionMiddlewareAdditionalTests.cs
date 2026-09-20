@@ -41,7 +41,8 @@ namespace e.l.f._Beauty.Tests.Middleware
             Assert.Equal(400, context.Response.StatusCode);
             Assert.NotNull(pd);
 
-            Assert.Contains(testLogger.Entries, e => e.Level == Microsoft.Extensions.Logging.LogLevel.Warning && e.Message?.Contains("Validation error") == true);
+            // Assert a warning log entry with the original ValidationException
+            Assert.Contains(testLogger.Entries, e => e.Level == Microsoft.Extensions.Logging.LogLevel.Warning && e.Exception is e.l.f.Validation.ValidationException);
         }
 
         [Fact]
@@ -69,7 +70,8 @@ namespace e.l.f._Beauty.Tests.Middleware
             Assert.Equal(404, context.Response.StatusCode);
             Assert.NotNull(pd);
 
-            Assert.Contains(testLogger2.Entries, e => e.Level == Microsoft.Extensions.Logging.LogLevel.Warning && e.Message?.Contains("Resource not found") == true);
+            // Assert a warning log entry with the original NotFoundException
+            Assert.Contains(testLogger2.Entries, e => e.Level == Microsoft.Extensions.Logging.LogLevel.Warning && e.Exception is e.l.f.Validation.NotFoundException);
         }
 
         [Fact]
@@ -97,7 +99,8 @@ namespace e.l.f._Beauty.Tests.Middleware
             Assert.Equal(504, context.Response.StatusCode);
             Assert.NotNull(pd);
 
-            Assert.Contains(testLogger3.Entries, e => e.Level == Microsoft.Extensions.Logging.LogLevel.Error && e.Message?.Contains("Request timed out") == true);
+            // Assert an error log entry with the original TimeoutException
+            Assert.Contains(testLogger3.Entries, e => e.Level == Microsoft.Extensions.Logging.LogLevel.Error && e.Exception is System.TimeoutException);
         }
 
         // reuse test helpers from other test file
