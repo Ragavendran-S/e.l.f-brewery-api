@@ -17,8 +17,16 @@ public class MemoryBreweryCache : IBreweryCache
         // Instrument cache lookups so runtime logs show which keys are used.
         if (_cache.TryGetValue(key, out IEnumerable<Brewery>? existing) && existing != null)
         {
-            _logger.LogDebug("Cache hit for {Key}", key);
-            return existing;
+            // Treat an empty cached collection or a cached placeholder with empty items as a cache miss
+            if (!existing.Any() || existing.All(b => string.IsNullOrEmpty(b?.Id) && string.IsNullOrWhiteSpace(b?.Name)))
+            {
+                _logger.LogDebug("Cache contains empty/placeholder value for {Key}; treating as miss and refetching", key);
+            }
+            else
+            {
+                _logger.LogDebug("Cache hit for {Key}", key);
+                return existing;
+            }
         }
 
         _logger.LogDebug("Cache lookup miss for {Key}, fetching from source", key);
