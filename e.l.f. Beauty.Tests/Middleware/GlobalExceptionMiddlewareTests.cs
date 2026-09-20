@@ -23,7 +23,8 @@ namespace e.l.f._Beauty.Tests.Middleware
 
             var env = new TestHostEnvironment(isDevelopment: true);
             var factory = new TestProblemDetailsFactory();
-            var logger = new NullLogger<GlobalExceptionMiddleware>();
+            var testLogger = new e.l.f._Beauty.Tests.Utils.TestLogger<GlobalExceptionMiddleware>();
+            var logger = testLogger as Microsoft.Extensions.Logging.ILogger<GlobalExceptionMiddleware>;
 
             var middleware = new GlobalExceptionMiddleware(next, logger, factory, env);
 
@@ -42,6 +43,9 @@ namespace e.l.f._Beauty.Tests.Middleware
             // Ensure the response is parseable problem details
             var doc = JsonSerializer.Deserialize<JsonDocument>(json);
             Assert.NotNull(doc);
+
+            // assert a logged error for 500
+            Assert.Contains(testLogger.Entries, e => e.Level == Microsoft.Extensions.Logging.LogLevel.Error && e.Exception is InvalidOperationException);
         }
 
         private class TestProblemDetailsFactory : ProblemDetailsFactory

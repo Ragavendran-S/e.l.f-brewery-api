@@ -23,7 +23,8 @@ namespace e.l.f._Beauty.Tests.Middleware
 
             var env = new TestHostEnvironment(isDevelopment: true);
             var factory = new TestProblemDetailsFactory();
-            var logger = new NullLogger<GlobalExceptionMiddleware>();
+            var testLogger = new e.l.f._Beauty.Tests.Utils.TestLogger<GlobalExceptionMiddleware>();
+            var logger = testLogger as Microsoft.Extensions.Logging.ILogger<GlobalExceptionMiddleware>;
 
             var middleware = new GlobalExceptionMiddleware(next, logger, factory, env);
 
@@ -39,6 +40,8 @@ namespace e.l.f._Beauty.Tests.Middleware
             Assert.Equal("application/problem+json", context.Response.ContentType);
             Assert.Equal(400, context.Response.StatusCode);
             Assert.NotNull(pd);
+
+            Assert.Contains(testLogger.Entries, e => e.Level == Microsoft.Extensions.Logging.LogLevel.Warning && e.Message?.Contains("Validation error") == true);
         }
 
         [Fact]
@@ -48,9 +51,10 @@ namespace e.l.f._Beauty.Tests.Middleware
 
             var env = new TestHostEnvironment(isDevelopment: false);
             var factory = new TestProblemDetailsFactory();
-            var logger = new NullLogger<GlobalExceptionMiddleware>();
+            var testLogger2 = new e.l.f._Beauty.Tests.Utils.TestLogger<GlobalExceptionMiddleware>();
+            var logger2 = testLogger2 as Microsoft.Extensions.Logging.ILogger<GlobalExceptionMiddleware>;
 
-            var middleware = new GlobalExceptionMiddleware(next, logger, factory, env);
+            var middleware = new GlobalExceptionMiddleware(next, logger2, factory, env);
 
             var context = new DefaultHttpContext();
             context.Response.Body = new MemoryStream();
@@ -64,6 +68,8 @@ namespace e.l.f._Beauty.Tests.Middleware
             Assert.Equal("application/problem+json", context.Response.ContentType);
             Assert.Equal(404, context.Response.StatusCode);
             Assert.NotNull(pd);
+
+            Assert.Contains(testLogger2.Entries, e => e.Level == Microsoft.Extensions.Logging.LogLevel.Warning && e.Message?.Contains("Resource not found") == true);
         }
 
         [Fact]
@@ -73,9 +79,10 @@ namespace e.l.f._Beauty.Tests.Middleware
 
             var env = new TestHostEnvironment(isDevelopment: false);
             var factory = new TestProblemDetailsFactory();
-            var logger = new NullLogger<GlobalExceptionMiddleware>();
+            var testLogger3 = new e.l.f._Beauty.Tests.Utils.TestLogger<GlobalExceptionMiddleware>();
+            var logger3 = testLogger3 as Microsoft.Extensions.Logging.ILogger<GlobalExceptionMiddleware>;
 
-            var middleware = new GlobalExceptionMiddleware(next, logger, factory, env);
+            var middleware = new GlobalExceptionMiddleware(next, logger3, factory, env);
 
             var context = new DefaultHttpContext();
             context.Response.Body = new MemoryStream();
@@ -89,6 +96,8 @@ namespace e.l.f._Beauty.Tests.Middleware
             Assert.Equal("application/problem+json", context.Response.ContentType);
             Assert.Equal(504, context.Response.StatusCode);
             Assert.NotNull(pd);
+
+            Assert.Contains(testLogger3.Entries, e => e.Level == Microsoft.Extensions.Logging.LogLevel.Error && e.Message?.Contains("Request timed out") == true);
         }
 
         // reuse test helpers from other test file
