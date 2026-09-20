@@ -20,7 +20,8 @@ Developer notes / example
 // it to the token signature using a constant-time comparison. Example (simplified):
 using var hmac = new System.Security.Cryptography.HMACSHA256(keyBytes);
 var computed = hmac.ComputeHash(Encoding.ASCII.GetBytes(header + "." + payload));
-if (!CryptographicEquals(computed, signatureBytes))
+// Use constant-time comparison to avoid timing attacks
+if (!System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(computed, signatureBytes))
     throw new SecurityTokenInvalidSignatureException("Signature validation failed");
 ```
 

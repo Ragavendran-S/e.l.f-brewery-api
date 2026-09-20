@@ -1,5 +1,4 @@
-﻿using Castle.Core.Logging;
-using e.l.f._Beauty.JwtOptions;
+﻿using e.l.f._Beauty.JwtOptions;
 using e.l.f._Beauty.Models;
 using e.l.f.GlobalException;
 using Microsoft.AspNetCore.Mvc;
