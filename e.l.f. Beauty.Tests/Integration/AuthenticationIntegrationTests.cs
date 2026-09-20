@@ -26,8 +26,11 @@ namespace e.l.f._Beauty.Tests.Integration
             // platform crypto providers may enforce different symmetric key requirements.
             // The unit tests still validate the token logic. When running locally
             // set CI=false or unset GITHUB_ACTIONS to execute this test.
-            if (!string.IsNullOrEmpty(System.Environment.GetEnvironmentVariable("GITHUB_ACTIONS")) ||
-                !string.IsNullOrEmpty(System.Environment.GetEnvironmentVariable("CI")))
+            // By default skip this long-running/platform-sensitive test in CI. Set RUN_E2E_IN_CI=true to opt-in.
+            var isCi = !string.IsNullOrEmpty(System.Environment.GetEnvironmentVariable("GITHUB_ACTIONS")) ||
+                       !string.IsNullOrEmpty(System.Environment.GetEnvironmentVariable("CI"));
+            var runE2E = string.Equals(System.Environment.GetEnvironmentVariable("RUN_E2E_IN_CI"), "true", System.StringComparison.OrdinalIgnoreCase);
+            if (isCi && !runE2E)
             {
                 return;
             }

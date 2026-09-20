@@ -341,6 +341,30 @@ CI note
 -------
 - In CI pipelines you can provide Jwt__Key as an environment variable so integration tests and the test host can start with a deterministic key compatible with your signing algorithm. Do not expose the secret in logs or public traces.
 
+Running end-to-end (E2E) integration tests in CI
+----------------------------------------------
+- The repository includes a WebApplicationFactory-based end-to-end test (Login -> protected endpoint). By default this test is skipped in CI to avoid platform-specific HMAC key sizing issues.
+- To opt-in and run the E2E test in CI set the environment variable RUN_E2E_IN_CI=true in your pipeline and ensure Jwt__Key is provided as a secret environment variable (base64 string). Example (GitHub Actions):
+
+```yaml
+env:
+  RUN_E2E_IN_CI: "true"
+  Jwt__Key: ${{ secrets.JWT_KEY }}
+  Jwt__Issuer: "brewery-api"
+  Jwt__Audience: "brewery-api"
+```
+
+Local runs
+----------
+- To run E2E tests locally, make sure your environment provides Jwt:Key (via user-secrets or Jwt__Key env var) and then execute `dotnet test`.
+- Alternatively you can run only the integration tests with a filter:
+
+```powershell
+dotnet test --filter "Category=Integration"
+```
+
+Note: the test host derives a deterministic signing key internally when running in the test; you only need to provide Jwt__Key when enabling CI runs.
+
 Windows environment variable note
 --------------------------------
 Do NOT rely on generic environment names like `Username`/`Password` because Windows defines a built-in `%USERNAME%`
