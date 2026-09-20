@@ -8,6 +8,5 @@ public interface IBrewerySorter
 public interface IBrewerySorterFactory
 {
     IBrewerySorter GetSorter(string sortBy);
-    IBrewerySorter Create(string sortType);
 
 }

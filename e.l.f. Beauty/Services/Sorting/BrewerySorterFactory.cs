@@ -22,6 +22,6 @@
         }
     }
 
-    // Keep Create for backward compatibility but forward to GetSorter so behavior is consistent.
-    public IBrewerySorter Create(string sortType) => GetSorter(sortType);
+    // Create was removed from the factory interface to avoid duplicated API surface.
+    // If callers still rely on Create, update them to call GetSorter instead.
 }
