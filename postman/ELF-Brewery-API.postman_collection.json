@@ -1,0 +1,97 @@
+{
+  "info": {
+    "name": "e.l.f. Brewery API",
+    "_postman_id": "00000000-0000-0000-0000-000000000000",
+    "description": "Minimal Postman collection for login and brewery endpoints.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth - Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"username\": \"admin\", \"password\": \"password\"}"
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/auth/login",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api","auth","login"]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var json = pm.response.json();",
+              "if (json.token) { pm.environment.set('token', json.token); }"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Breweries - Get List",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:5000/api/v1/breweries",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api","v1","breweries"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Breweries - Autocomplete",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:5000/api/v1/breweries/autocomplete?query=lag",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api","v1","breweries","autocomplete"],
+          "query": [
+            { "key": "query", "value": "lag" }
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": []
+}

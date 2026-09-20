@@ -193,6 +193,20 @@ If you prefer GUI interaction, start the app in Development and the Swagger UI w
 open in your browser where you can run the same calls interactively and inspect
 request/response payloads.
 
+Postman collection and curl script
+---------------------------------
+This repository includes a minimal Postman collection and a curl script you can
+use to reproduce the login + protected endpoint flows.
+
+- Postman: postman/ELF-Brewery-API.postman_collection.json — import into Postman and run the Auth - Login request, then use the stored token to call the brewery endpoints.
+- Curl script: scripts/curl_examples.sh — executable bash script that logs in and calls the /breweries and /breweries/autocomplete endpoints. Requires jq for JSON parsing/pretty-printing. Run with:
+
+```bash
+chmod +x scripts/curl_examples.sh
+./scripts/curl_examples.sh
+```
+
+
 performance issues with very large datasets consider adding indexes on Name/City fields in your
 database.
 
