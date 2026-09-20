@@ -56,14 +56,6 @@ namespace e.l.f._Beauty.Services
         }
         public async Task<IEnumerable<Brewery>> SearchBreweriesAsync(string query)
         {
-            //For Internal Demo - Start
-            //simulate External API call
-            //var externalResults = new List<ExternalBrewery>
-            //{
-            //    new ExternalBrewery { brewery_id = "123", brewery_name = "Lagunitas Brewing Co", location_city = "Petaluma", location_state = "California", location_country = "USA" },
-            //    new ExternalBrewery { brewery_id = "456", brewery_name = "Lager House", location_city = "Detroit", location_state = "Michigan", location_country = "USA" }
-            //};
-            //For Internal Demo - End
             // Fetch from repository or external API
             var key = $"search:{query}";
             // Fetch search results from repository (which may call an upstream autocomplete endpoint).
@@ -73,8 +65,6 @@ namespace e.l.f._Beauty.Services
             // Map external → internal and return as-is
             var mappedResults = _mapper.Map<IEnumerable<Brewery>>(externalResults);
             return mappedResults;
-
-            //return await _repository.SearchBreweriesAsync(query);
         }
         
         private IEnumerable<Brewery> SortByDistance(IEnumerable<Brewery> breweries, BreweryQueryOptions options)

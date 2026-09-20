@@ -4,8 +4,8 @@ Summary
 -------
 - Repository: feature/Feature/e.l.f-brewery-api branch
 - Solution: e.l.f. Beauty.sln (targeting .NET 8)
-- Tests: 41 passed, 0 failed
-- Line coverage (solution): 53.7% (see code-review/coverage-summary.csv)
+- Tests: 44 passed, 0 failed (additional TokenValidator unit tests added)
+- Line coverage (solution): 56.9% (see code-review/coverage-summary-updated.csv)
 
 High-level findings
 -------------------
@@ -20,6 +20,8 @@ Areas to improve (priority order)
 1) Increase coverage in core service and validation logic
    - BreweryService: 41.5% coverage. Add tests for sorting/filtering/paging branches, error handling, and caching behaviors.
    - TokenValidator: 12.1% coverage. Add unit tests exercising signature/issuer/audience failure paths and any FIPS/crypto logic.
+	  - TokenValidator: 12.1% coverage. Added unit tests to exercise valid, invalid signature and expired token paths.
+	 - TokenValidator: improved coverage to 63.6% via new tests in e.l.f. Beauty.Tests/Validator/TokenValidatorAdditionalTests.cs.
    - Repository.BreweryRepository: 38.6% coverage. Add tests for DB-backed paging and upstream fallback behaviors.
 
 2) Remove dead code and ensure single-responsibility
@@ -53,7 +55,7 @@ Suggested next steps
    - Paging helper edge cases
    - Cache miss/hit behaviors
 
-2. Add TokenValidator unit tests covering invalid signatures, expired tokens and malformed inputs.
+2. TokenValidator unit tests added. See e.l.f. Beauty.Tests/Validator/TokenValidatorAdditionalTests.cs.
 
 3. Add a CI workflow (GitHub Actions) that runs dotnet test with coverage and publishes the coverage artifacts and report.
 
