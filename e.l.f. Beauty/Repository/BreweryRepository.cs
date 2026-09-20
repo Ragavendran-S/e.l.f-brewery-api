@@ -125,6 +125,13 @@ namespace e.l.f._Beauty.Repository
 
                 var pagedQuery = _pagingHelper.ApplyPaging(query, page, pageSize);
                 var items = await pagedQuery.ToListAsync();
+                // If the local DB has no data, fall back to upstream API so the service still returns results
+                if (items == null || !items.Any())
+                {
+                    _logger.LogInformation("Local database contains no breweries; falling back to upstream API.");
+                    return await _upstream.GetBreweriesAsync(options);
+                }
+
                 return items;
             }
 
