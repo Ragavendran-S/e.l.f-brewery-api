@@ -5,7 +5,7 @@ Summary
 - Repository: feature/Feature/e.l.f-brewery-api branch
 - Solution: e.l.f. Beauty.sln (targeting .NET 8)
 - Tests: 44 passed, 0 failed (additional TokenValidator unit tests added)
-- Line coverage (solution): 56.9% (see code-review/coverage-summary-updated.csv)
+- Line coverage (solution): 56.9% (see code-review/coverage-summary-final.csv)
 
 High-level findings
 -------------------
