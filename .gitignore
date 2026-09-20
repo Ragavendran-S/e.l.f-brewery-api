@@ -1,5 +1,12 @@
 # Ignore local SQLite database file
 brewery.db
+e.l.f Beauty/brewery.db
+e.l.f. Beauty/brewery.db-shm
+e.l.f. Beauty/brewery.db-wal
+api-execution-results.csv
+swagger.json
+swagger-utf8.json
+swagger-utf16.json
 
 # Common Visual Studio / .NET ignores
 .bin/
