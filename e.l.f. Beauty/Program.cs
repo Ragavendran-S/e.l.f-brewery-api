@@ -64,58 +64,67 @@ static string ResolveJwtKey(Microsoft.Extensions.Configuration.IConfiguration co
     throw new InvalidOperationException("Jwt:Key must be configured.");
 }
 
-var jwtKey = ResolveJwtKey(builder.Configuration) ?? throw new InvalidOperationException("Configuration value 'Jwt:Key' is required. In Development use: dotnet user-secrets set \"Jwt:Key\" \"<base64-key>\" or set environment variable 'Jwt__Key'.");
-var jwtIssuer = builder.Configuration["Jwt:Issuer"];
-var jwtAudience = builder.Configuration["Jwt:Audience"];
-// Override appsettings.json with GitHub secrets
-// 🔒 Configure JWT Authentication
+// Configure JWT Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-    options.Events = new JwtBearerEvents
-    {
-        OnAuthenticationFailed = ctx =>
+        options.Events = new JwtBearerEvents
         {
-            try
+            OnAuthenticationFailed = ctx =>
             {
-                var logger = ctx.HttpContext?.RequestServices.GetService(typeof(ILogger<Program>)) as ILogger;
-                // Structured log with event id for token validation failures
-                logger?.LogWarning(e.l.f.Logging.EventIds.TokenValidationFailed, ctx.Exception, "Token authentication failed: {Message}", ctx.Exception?.Message);
-            }
-            catch
+                try
+                {
+                    var logger = ctx.HttpContext?.RequestServices.GetService(typeof(ILogger<Program>)) as ILogger;
+                    // Structured log with event id for token validation failures
+                    logger?.LogWarning(e.l.f.Logging.EventIds.TokenValidationFailed, ctx.Exception, "Token authentication failed: {Message}", ctx.Exception?.Message);
+                }
+                catch
+                {
+                    // Swallow any logging errors to avoid masking the original authentication failure
+                }
+                return Task.CompletedTask;
+            },
+            OnTokenValidated = ctx =>
             {
-                // Swallow any logging errors to avoid masking the original authentication failure
+                try
+                {
+                    var logger = ctx.HttpContext?.RequestServices.GetService(typeof(ILogger<Program>)) as ILogger;
+                    logger?.LogInformation(e.l.f.Logging.EventIds.TokenValidation, "Token validated successfully for request {Path}", ctx.HttpContext?.Request?.Path.Value);
+                }
+                catch
+                {
+                    // Swallow logging exceptions
+                }
+                return Task.CompletedTask;
             }
-            return Task.CompletedTask;
-        },
-        OnTokenValidated = ctx =>
-        {
-            try
-            {
-                var logger = ctx.HttpContext?.RequestServices.GetService(typeof(ILogger<Program>)) as ILogger;
-                logger?.LogInformation(e.l.f.Logging.EventIds.TokenValidation, "Token validated successfully for request {Path}", ctx.HttpContext?.Request?.Path.Value);
-            }
-            catch
-            {
-                // Swallow logging exceptions
-            }
-            return Task.CompletedTask;
-        }
-    };
-        // Validate jwtKey early with a clear error message so startup fails fast if misconfigured.
-        // Normalize key bytes using JwtKeyHelper so runtime uses the same bytes as token issuance
-        var keyBytes = e.l.f._Beauty.Security.JwtKeyHelper.GetKeyBytes(jwtKey);
-        options.TokenValidationParameters = new TokenValidationParameters
-
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtIssuer,
-            ValidAudience = jwtAudience,
-            IssuerSigningKey = new SymmetricSecurityKey(keyBytes)
         };
+
+        // Resolve signing key and validation parameters from the current runtime configuration
+        try
+        {
+            var resolvedKey = ResolveJwtKey(builder.Configuration);
+            var keyBytes = e.l.f._Beauty.Security.JwtKeyHelper.GetKeyBytes(resolvedKey);
+            var jwtIssuerLocal = builder.Configuration["Jwt:Issuer"];
+            var jwtAudienceLocal = builder.Configuration["Jwt:Audience"];
+
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = !string.IsNullOrEmpty(jwtIssuerLocal),
+                ValidateAudience = !string.IsNullOrEmpty(jwtAudienceLocal),
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = jwtIssuerLocal,
+                ValidAudience = jwtAudienceLocal,
+                IssuerSigningKey = new SymmetricSecurityKey(keyBytes)
+            };
+        }
+        catch (Exception ex)
+        {
+            // If key resolution fails at startup, log and rethrow so developers get a clear failure
+            var startupLogger = builder.Services.BuildServiceProvider().GetService<ILogger<Program>>();
+            startupLogger?.LogCritical(e.l.f.Logging.EventIds.JwtKeyWarning, ex, "Failed to resolve JWT signing key: {Message}", ex.Message);
+            throw;
+        }
     });
 
 // Register AutoMapper manually so we don't depend on the extension package here.
