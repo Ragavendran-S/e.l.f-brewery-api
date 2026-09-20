@@ -142,6 +142,57 @@ When to expect DB-backed behavior:
   to upstream lookups and service-level paging remains a fallback.
 
 No action required for local development when using the provided test database. If you run into
+
+API usage examples
+------------------
+
+The project ships with Swashbuckle/Swagger configured and launchSettings.json set to
+auto-open the Swagger UI when running in Development. You can exercise the API there,
+or use the curl examples below to reproduce the most common flows from a shell.
+
+Notes:
+- Replace the host/port below if your local app uses different URLs (check the console
+  output when running dotnet run or the launchSettings.json profiles).
+- The examples assume the app is available at http://localhost:5000 and that the
+  development credentials (admin / password) are set via user-secrets or environment vars.
+
+1) Login and obtain a JWT (bash)
+
+```bash
+# Obtain a token and store it in $TOKEN (requires `jq` to parse JSON)
+TOKEN=$(curl -s -X POST http://localhost:5000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"password"}' | jq -r '.token')
+echo "TOKEN=$TOKEN"
+```
+
+PowerShell equivalent:
+
+```powershell
+$resp = Invoke-RestMethod -Method Post -Uri http://localhost:5000/api/auth/login -ContentType 'application/json' -Body '{"username":"admin","password":"password"}'
+$token = $resp.token
+Write-Output $token
+```
+
+2) Call a protected endpoint using the token (bash)
+
+```bash
+curl -s http://localhost:5000/api/v1/breweries \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Accept: application/json" | jq '.'
+```
+
+3) Autocomplete example (bash)
+
+```bash
+curl -s "http://localhost:5000/api/v1/breweries/autocomplete?query=lag" \
+  -H "Authorization: Bearer $TOKEN" -H "Accept: application/json" | jq '.'
+```
+
+If you prefer GUI interaction, start the app in Development and the Swagger UI will
+open in your browser where you can run the same calls interactively and inspect
+request/response payloads.
+
 performance issues with very large datasets consider adding indexes on Name/City fields in your
 database.
 
