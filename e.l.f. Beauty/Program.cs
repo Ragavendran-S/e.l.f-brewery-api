@@ -145,17 +145,20 @@ builder.Services.AddOptions<JwtOptionsAuth>()
     .ValidateOnStart();
 // Register DbContext with SQLite
 var defaultConn = builder.Configuration.GetConnectionString("DefaultConnection");
-if (string.IsNullOrEmpty(defaultConn))
+if (!string.IsNullOrWhiteSpace(defaultConn))
 {
-    // In CI and test runs the configuration may not provide a connection string.
-    // Use a local file-based Sqlite database in the test output directory so migrations
-    // can be applied and tests run without requiring external configuration.
-    var dbPath = System.IO.Path.Combine(AppContext.BaseDirectory, "brewery.db");
-    defaultConn = $"Data Source={dbPath}";
+    // Register the DbContext only when a real connection string is provided.
+    builder.Services.AddDbContext<BreweryDbContext>(options =>
+        options.UseSqlite(defaultConn));
 }
-
-builder.Services.AddDbContext<BreweryDbContext>(options =>
-    options.UseSqlite(defaultConn));
+else
+{
+    // No DB connection configured. Do not register BreweryDbContext so the
+    // BreweryRepository will receive a null DbContext and will fall back to
+    // the upstream API client for reads/writes.
+    var startupLogger = builder.Services.BuildServiceProvider().GetService<ILogger<Program>>();
+    startupLogger?.LogInformation("No DefaultConnection configured; running without local DB. BreweryRepository will use upstream API.");
+}
 // Add services to the container.
 builder.Services.AddScoped<TokenValidator>();
 builder.Services.AddControllers();
@@ -164,7 +167,16 @@ builder.Services.AddMemoryCache();
 builder.Services.AddScoped<IBreweryCache, MemoryBreweryCache>();
 builder.Services.AddHttpClient<IUpstreamBreweryClient, UpstreamBreweryClient>();
 // BreweryRepository depends on IUpstreamBreweryClient, BreweryDbContext, ILogger<BreweryRepository>, and IPagingHelper
-builder.Services.AddScoped<IBreweryRepository, BreweryRepository>();
+// Register BreweryRepository using a factory so we can supply a null BreweryDbContext
+// when no local DB is configured. BreweryRepository accepts a nullable BreweryDbContext.
+builder.Services.AddScoped<IBreweryRepository>(sp =>
+{
+    var upstream = sp.GetRequiredService<IUpstreamBreweryClient>();
+    var db = sp.GetService<BreweryDbContext>(); // may be null when no DB configured
+    var repoLogger = sp.GetRequiredService<ILogger<BreweryRepository>>();
+    var paging = sp.GetRequiredService<IPagingHelper>();
+    return new BreweryRepository(upstream, db, repoLogger, paging);
+});
 builder.Services.AddScoped<IBreweryService, BreweryService>();
 builder.Services.AddScoped<IBreweryFilter, BreweryFilter>();
 builder.Services.AddScoped<IBrewerySorterFactory, BrewerySorterFactory>();

@@ -27,10 +27,17 @@ namespace e.l.f._Beauty.Controllers
         private readonly ILogger<BreweryService> _logger;
         private readonly IBreweryRepository _repository;
         private readonly IPagingHelper _pagingHelper;
-        private readonly BreweryDbContext _dbContext;
+        private readonly BreweryDbContext? _dbContext;
         [ActivatorUtilitiesConstructor]
-        public BreweriesController(IBreweryService service, ILogger<BreweryService> logger,IBreweryRepository repository, BreweryDbContext dbContext, IPagingHelper pagingHelper)
-        { _service = service; _logger = logger;_repository = repository; _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext)); _pagingHelper = pagingHelper ?? throw new ArgumentNullException(nameof(pagingHelper)); }
+        public BreweriesController(IBreweryService service, ILogger<BreweryService> logger, IBreweryRepository repository, BreweryDbContext? dbContext, IPagingHelper pagingHelper)
+        {
+            _service = service;
+            _logger = logger;
+            _repository = repository;
+            // dbContext may be null when no local DB is configured; repository handles null DbContext.
+            _dbContext = dbContext;
+            _pagingHelper = pagingHelper ?? throw new ArgumentNullException(nameof(pagingHelper));
+        }
 
         // Convenience ctor for unit tests that only need the service and a logger
         public BreweriesController(IBreweryService service, ILogger<BreweryService> logger)
@@ -78,10 +85,20 @@ namespace e.l.f._Beauty.Controllers
             }
 
         }
-        [HttpGet("{Name}")]
+        [HttpGet("{name}")]
         public async Task<IActionResult> GetBrewery(string name)
         {
-            var brewery = await _repository.GetBreweryByNameAsync(name);
+            // Normalize common URL-friendly forms (e.g. hyphens) into the
+            // upstream API's expected value. Many clients use hyphens in place
+            // of spaces when constructing URLs (e.g. 'Sierra-Nevada'), but the
+            // upstream 'by_name' filter expects the real name (spaces).
+            var normalized = (name ?? string.Empty).Replace('-', ' ');
+
+            // The repository returns a collection from the upstream API. Return the
+            // first matching brewery (if any) so this endpoint matches the single-item
+            // resource semantics of /breweries/{name}.
+            var breweries = await _repository.GetBreweryByNameAsync(normalized);
+            var brewery = breweries?.FirstOrDefault();
             if (brewery == null) return NotFound();
             return Ok(brewery);
         }
@@ -90,7 +107,8 @@ namespace e.l.f._Beauty.Controllers
         public async Task<IActionResult> AddBrewery(Brewery brewery)
         {
             await _repository.AddBreweryAsync(brewery);
-            return CreatedAtAction(nameof(GetBrewery), new { id = brewery.Id }, brewery);
+            // Return location using the route parameter name expected by GetBrewery
+            return CreatedAtAction(nameof(GetBrewery), new { name = brewery.Name }, brewery);
         }
 
     }

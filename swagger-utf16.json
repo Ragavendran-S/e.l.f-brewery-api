@@ -1,0 +1,383 @@
+﻿{
+    "openapi":  "3.0.1",
+    "info":  {
+                 "title":  "E.L.F Brewery API",
+                 "version":  "1.0"
+             },
+    "paths":  {
+                  "/api/Auth/validate":  {
+                                             "post":  {
+                                                          "tags":  [
+                                                                       "Auth"
+                                                                   ],
+                                                          "parameters":  [
+                                                                             {
+                                                                                 "name":  "api-version",
+                                                                                 "in":  "query",
+                                                                                 "schema":  {
+                                                                                                "type":  "string"
+                                                                                            }
+                                                                             }
+                                                                         ],
+                                                          "requestBody":  {
+                                                                              "content":  {
+                                                                                              "application/json":  {
+                                                                                                                       "schema":  {
+                                                                                                                                      "type":  "string"
+                                                                                                                                  }
+                                                                                                                   },
+                                                                                              "text/json":  {
+                                                                                                                "schema":  {
+                                                                                                                               "type":  "string"
+                                                                                                                           }
+                                                                                                            },
+                                                                                              "application/*+json":  {
+                                                                                                                         "schema":  {
+                                                                                                                                        "type":  "string"
+                                                                                                                                    }
+                                                                                                                     }
+                                                                                          }
+                                                                          },
+                                                          "responses":  {
+                                                                            "200":  {
+                                                                                        "description":  "Success"
+                                                                                    }
+                                                                        }
+                                                      }
+                                         },
+                  "/api/Auth/login":  {
+                                          "post":  {
+                                                       "tags":  [
+                                                                    "Auth"
+                                                                ],
+                                                       "parameters":  [
+                                                                          {
+                                                                              "name":  "api-version",
+                                                                              "in":  "query",
+                                                                              "schema":  {
+                                                                                             "type":  "string"
+                                                                                         }
+                                                                          }
+                                                                      ],
+                                                       "requestBody":  {
+                                                                           "content":  {
+                                                                                           "application/json":  {
+                                                                                                                    "schema":  {
+                                                                                                                                   "$ref":  "#/components/schemas/LoginModel"
+                                                                                                                               }
+                                                                                                                },
+                                                                                           "text/json":  {
+                                                                                                             "schema":  {
+                                                                                                                            "$ref":  "#/components/schemas/LoginModel"
+                                                                                                                        }
+                                                                                                         },
+                                                                                           "application/*+json":  {
+                                                                                                                      "schema":  {
+                                                                                                                                     "$ref":  "#/components/schemas/LoginModel"
+                                                                                                                                 }
+                                                                                                                  }
+                                                                                       }
+                                                                       },
+                                                       "responses":  {
+                                                                         "200":  {
+                                                                                     "description":  "Success"
+                                                                                 }
+                                                                     }
+                                                   }
+                                      },
+                  "/api/v1/breweries":  {
+                                            "get":  {
+                                                        "tags":  [
+                                                                     "Breweries"
+                                                                 ],
+                                                        "parameters":  [
+                                                                           {
+                                                                               "name":  "Search",
+                                                                               "in":  "query",
+                                                                               "schema":  {
+                                                                                              "type":  "string"
+                                                                                          }
+                                                                           },
+                                                                           {
+                                                                               "name":  "City",
+                                                                               "in":  "query",
+                                                                               "schema":  {
+                                                                                              "type":  "string"
+                                                                                          }
+                                                                           },
+                                                                           {
+                                                                               "name":  "SortBy",
+                                                                               "in":  "query",
+                                                                               "schema":  {
+                                                                                              "type":  "string"
+                                                                                          }
+                                                                           },
+                                                                           {
+                                                                               "name":  "Ascending",
+                                                                               "in":  "query",
+                                                                               "schema":  {
+                                                                                              "type":  "boolean"
+                                                                                          }
+                                                                           },
+                                                                           {
+                                                                               "name":  "Page",
+                                                                               "in":  "query",
+                                                                               "schema":  {
+                                                                                              "type":  "integer",
+                                                                                              "format":  "int32"
+                                                                                          }
+                                                                           },
+                                                                           {
+                                                                               "name":  "PageSize",
+                                                                               "in":  "query",
+                                                                               "schema":  {
+                                                                                              "type":  "integer",
+                                                                                              "format":  "int32"
+                                                                                          }
+                                                                           },
+                                                                           {
+                                                                               "name":  "UserLat",
+                                                                               "in":  "query",
+                                                                               "schema":  {
+                                                                                              "type":  "number",
+                                                                                              "format":  "double"
+                                                                                          }
+                                                                           },
+                                                                           {
+                                                                               "name":  "UserLng",
+                                                                               "in":  "query",
+                                                                               "schema":  {
+                                                                                              "type":  "number",
+                                                                                              "format":  "double"
+                                                                                          }
+                                                                           }
+                                                                       ],
+                                                        "responses":  {
+                                                                          "200":  {
+                                                                                      "description":  "Success",
+                                                                                      "content":  {
+                                                                                                      "text/plain":  {
+                                                                                                                         "schema":  {
+                                                                                                                                        "$ref":  "#/components/schemas/BreweryPagedResult"
+                                                                                                                                    }
+                                                                                                                     },
+                                                                                                      "application/json":  {
+                                                                                                                               "schema":  {
+                                                                                                                                              "$ref":  "#/components/schemas/BreweryPagedResult"
+                                                                                                                                          }
+                                                                                                                           },
+                                                                                                      "text/json":  {
+                                                                                                                        "schema":  {
+                                                                                                                                       "$ref":  "#/components/schemas/BreweryPagedResult"
+                                                                                                                                   }
+                                                                                                                    }
+                                                                                                  }
+                                                                                  }
+                                                                      }
+                                                    },
+                                            "post":  {
+                                                         "tags":  [
+                                                                      "Breweries"
+                                                                  ],
+                                                         "requestBody":  {
+                                                                             "content":  {
+                                                                                             "application/json":  {
+                                                                                                                      "schema":  {
+                                                                                                                                     "$ref":  "#/components/schemas/Brewery"
+                                                                                                                                 }
+                                                                                                                  },
+                                                                                             "text/json":  {
+                                                                                                               "schema":  {
+                                                                                                                              "$ref":  "#/components/schemas/Brewery"
+                                                                                                                          }
+                                                                                                           },
+                                                                                             "application/*+json":  {
+                                                                                                                        "schema":  {
+                                                                                                                                       "$ref":  "#/components/schemas/Brewery"
+                                                                                                                                   }
+                                                                                                                    }
+                                                                                         }
+                                                                         },
+                                                         "responses":  {
+                                                                           "200":  {
+                                                                                       "description":  "Success"
+                                                                                   }
+                                                                       }
+                                                     }
+                                        },
+                  "/api/v1/breweries/autocomplete":  {
+                                                         "get":  {
+                                                                     "tags":  [
+                                                                                  "Breweries"
+                                                                              ],
+                                                                     "parameters":  [
+                                                                                        {
+                                                                                            "name":  "query",
+                                                                                            "in":  "query",
+                                                                                            "schema":  {
+                                                                                                           "type":  "string"
+                                                                                                       }
+                                                                                        }
+                                                                                    ],
+                                                                     "responses":  {
+                                                                                       "200":  {
+                                                                                                   "description":  "Success"
+                                                                                               }
+                                                                                   }
+                                                                 }
+                                                     },
+                  "/api/v1/breweries/{Name}":  {
+                                                   "get":  {
+                                                               "tags":  [
+                                                                            "Breweries"
+                                                                        ],
+                                                               "parameters":  [
+                                                                                  {
+                                                                                      "name":  "name",
+                                                                                      "in":  "path",
+                                                                                      "required":  true,
+                                                                                      "schema":  {
+                                                                                                     "type":  "string"
+                                                                                                 }
+                                                                                  }
+                                                                              ],
+                                                               "responses":  {
+                                                                                 "200":  {
+                                                                                             "description":  "Success"
+                                                                                         }
+                                                                             }
+                                                           }
+                                               },
+                  "/api/Test/protected":  {
+                                              "get":  {
+                                                          "tags":  [
+                                                                       "Test"
+                                                                   ],
+                                                          "parameters":  [
+                                                                             {
+                                                                                 "name":  "api-version",
+                                                                                 "in":  "query",
+                                                                                 "schema":  {
+                                                                                                "type":  "string"
+                                                                                            }
+                                                                             }
+                                                                         ],
+                                                          "responses":  {
+                                                                            "200":  {
+                                                                                        "description":  "Success"
+                                                                                    }
+                                                                        }
+                                                      }
+                                          }
+              },
+    "components":  {
+                       "schemas":  {
+                                       "Brewery":  {
+                                                       "type":  "object",
+                                                       "properties":  {
+                                                                          "id":  {
+                                                                                     "type":  "string",
+                                                                                     "nullable":  true
+                                                                                 },
+                                                                          "name":  {
+                                                                                       "type":  "string",
+                                                                                       "nullable":  true
+                                                                                   },
+                                                                          "brewery_Type":  {
+                                                                                               "type":  "string",
+                                                                                               "nullable":  true
+                                                                                           },
+                                                                          "street":  {
+                                                                                         "type":  "string",
+                                                                                         "nullable":  true
+                                                                                     },
+                                                                          "city":  {
+                                                                                       "type":  "string",
+                                                                                       "nullable":  true
+                                                                                   },
+                                                                          "state":  {
+                                                                                        "type":  "string",
+                                                                                        "nullable":  true
+                                                                                    },
+                                                                          "country":  {
+                                                                                          "type":  "string",
+                                                                                          "nullable":  true
+                                                                                      },
+                                                                          "phone":  {
+                                                                                        "type":  "string",
+                                                                                        "nullable":  true
+                                                                                    },
+                                                                          "latitude":  {
+                                                                                           "type":  "number",
+                                                                                           "format":  "double",
+                                                                                           "nullable":  true
+                                                                                       },
+                                                                          "longitude":  {
+                                                                                            "type":  "number",
+                                                                                            "format":  "double",
+                                                                                            "nullable":  true
+                                                                                        }
+                                                                      },
+                                                       "additionalProperties":  false
+                                                   },
+                                       "BreweryPagedResult":  {
+                                                                  "type":  "object",
+                                                                  "properties":  {
+                                                                                     "items":  {
+                                                                                                   "type":  "array",
+                                                                                                   "items":  {
+                                                                                                                 "$ref":  "#/components/schemas/Brewery"
+                                                                                                             },
+                                                                                                   "nullable":  true
+                                                                                               },
+                                                                                     "totalItems":  {
+                                                                                                        "type":  "integer",
+                                                                                                        "format":  "int32"
+                                                                                                    },
+                                                                                     "page":  {
+                                                                                                  "type":  "integer",
+                                                                                                  "format":  "int32"
+                                                                                              },
+                                                                                     "pageSize":  {
+                                                                                                      "type":  "integer",
+                                                                                                      "format":  "int32"
+                                                                                                  }
+                                                                                 },
+                                                                  "additionalProperties":  false
+                                                              },
+                                       "LoginModel":  {
+                                                          "type":  "object",
+                                                          "properties":  {
+                                                                             "username":  {
+                                                                                              "type":  "string",
+                                                                                              "nullable":  true
+                                                                                          },
+                                                                             "password":  {
+                                                                                              "type":  "string",
+                                                                                              "nullable":  true
+                                                                                          },
+                                                                             "firstName":  {
+                                                                                               "type":  "string",
+                                                                                               "nullable":  true
+                                                                                           }
+                                                                         },
+                                                          "additionalProperties":  false
+                                                      }
+                                   },
+                       "securitySchemes":  {
+                                               "Bearer":  {
+                                                              "type":  "apiKey",
+                                                              "description":  "Enter \u0027Bearer\u0027 followed by your JWT token",
+                                                              "name":  "Authorization",
+                                                              "in":  "header"
+                                                          }
+                                           }
+                   },
+    "security":  [
+                     {
+                         "Bearer":  [
+
+                                    ]
+                     }
+                 ]
+}
