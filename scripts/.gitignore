@@ -1,5 +1,0 @@
-# Ignore local secrets file created by some tools
-secrets.json
-
-# Ignore local PowerShell profile edits
-Microsoft.PowerShell_profile.ps1
