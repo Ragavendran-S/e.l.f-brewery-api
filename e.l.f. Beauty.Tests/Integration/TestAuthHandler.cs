@@ -9,12 +9,14 @@ namespace e.l.f._Beauty.Tests.Integration
 {
     public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
     {
-#pragma warning disable CS0618 // ISystemClock is obsolete in some target frameworks; tests may still reference it
-        public TestAuthHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder, Microsoft.AspNetCore.Authentication.ISystemClock clock)
-            : base(options, logger, encoder, clock)
+        // Avoid referencing the obsolete ISystemClock type in the test constructor signature.
+        // Instantiate the concrete SystemClock implementation directly and pass it to the base
+        // constructor to satisfy the AuthenticationHandler dependency without using the
+        // obsolete interface type in our public/test API surface.
+        public TestAuthHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder)
+            : base(options, logger, encoder)
         {
         }
-#pragma warning restore CS0618
 
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
