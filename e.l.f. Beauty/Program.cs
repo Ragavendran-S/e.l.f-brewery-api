@@ -181,7 +181,15 @@ builder.Services.AddControllers();
 builder.Services.AddMemoryCache();
 // Register in-memory brewery cache implementation
 builder.Services.AddScoped<IBreweryCache, MemoryBreweryCache>();
-builder.Services.AddHttpClient<IUpstreamBreweryClient, UpstreamBreweryClient>();
+// Configure the upstream brewery HTTP client with a sensible BaseAddress so any
+// relative URIs used by the client will work even if callers forget to set a
+// BaseAddress on the HttpClient. The client implementation prefers absolute
+// URIs but configuring BaseAddress here prevents InvalidOperationException for
+// relative requests and aligns with common DI patterns.
+builder.Services.AddHttpClient<IUpstreamBreweryClient, UpstreamBreweryClient>(client =>
+{
+    client.BaseAddress = new Uri("https://api.openbrewerydb.org/");
+});
 // Register IBreweryRepository implementations. When a real DbContext is available use the
 // EF Core implementation wrapped with a caching decorator. When no DbContext is configured
 // fall back to the upstream-backed BreweryRepository which accepts a nullable DbContext.
