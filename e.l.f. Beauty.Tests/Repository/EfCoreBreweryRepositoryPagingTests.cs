@@ -30,7 +30,7 @@ namespace e.l.f._Beauty.Tests.Repository
             ctx.Breweries.AddRange(items);
             await ctx.SaveChangesAsync();
 
-            var repo = new ElfBreweryApi.Repositories.EfCoreBreweryRepository(ctx);
+            var repo = new e.l.f._Beauty.Repository.EfCoreBreweryRepository(ctx);
 
             var options = new BreweryQueryOptions { Page = 2, PageSize = 5, SortBy = "Name", Ascending = true };
             var page = await repo.GetBreweriesAsync(options);

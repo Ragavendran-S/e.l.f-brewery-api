@@ -183,7 +183,7 @@ builder.Services.AddMemoryCache();
 builder.Services.AddScoped<IBreweryCache, MemoryBreweryCache>();
 // Register concrete repository implementations so they are available for DI consumers
 // and to avoid leaving tested implementations unreachable at runtime.
-builder.Services.AddScoped<ElfBreweryApi.Repositories.EfCoreBreweryRepository>();
+builder.Services.AddScoped<e.l.f._Beauty.Repository.EfCoreBreweryRepository>();
 builder.Services.AddScoped<CachedBreweryRepository>();
 // Configure the upstream brewery HTTP client with a sensible BaseAddress so any
 // relative URIs used by the client will work even if callers forget to set a
@@ -203,7 +203,7 @@ builder.Services.AddScoped<IBreweryRepository>(sp =>
     if (db != null)
     {
         // Use EfCore repository when a relational DB is present
-        var efRepo = new ElfBreweryApi.Repositories.EfCoreBreweryRepository(db);
+        var efRepo = new e.l.f._Beauty.Repository.EfCoreBreweryRepository(db);
 
         // Wrap with cached decorator if IMemoryCache is available
         var cache = sp.GetService<IMemoryCache>();

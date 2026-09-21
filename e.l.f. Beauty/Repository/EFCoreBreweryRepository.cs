@@ -1,10 +1,8 @@
 ﻿using e.l.f._Beauty.Models;
 using e.l.f._Beauty.Repository;
-using ElfBreweryApi.Repositories;
-//using ElfBreweryApi.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace ElfBreweryApi.Repositories
+namespace e.l.f._Beauty.Repository
 {
     public class EfCoreBreweryRepository : IBreweryRepository
     {

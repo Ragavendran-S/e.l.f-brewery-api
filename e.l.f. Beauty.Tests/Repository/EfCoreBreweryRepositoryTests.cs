@@ -23,7 +23,7 @@ namespace e.l.f._Beauty.Tests.Repository
         public async Task AddBreweriesAsync_AddsRange_And_AllArePersisted()
         {
             using var ctx = CreateInMemoryContext();
-            var repo = new ElfBreweryApi.Repositories.EfCoreBreweryRepository(ctx);
+            var repo = new e.l.f._Beauty.Repository.EfCoreBreweryRepository(ctx);
 
             var items = new List<Brewery>
             {
