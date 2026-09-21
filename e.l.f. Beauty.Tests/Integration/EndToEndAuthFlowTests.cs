@@ -62,7 +62,13 @@ namespace e.l.f._Beauty.Tests.Integration
                         ["Jwt:Issuer"] = "brewery-api",
                         ["Jwt:Audience"] = "brewery-api",
                         ["Auth:Username"] = "admin",
-                        ["Auth:Password"] = "password"
+                        ["Auth:Password"] = "password",
+                        // Ensure the app does not use the on-disk SQLite file during this test run.
+                        // Tests must be isolated per-run; setting an empty DefaultConnection prevents
+                        // Program.cs from registering the SQLite DbContext which would otherwise
+                        // share the 'brewery.db' file across test runs and cause migration history
+                        // collisions.
+                        ["ConnectionStrings:DefaultConnection"] = string.Empty
                     };
                     cfg.AddInMemoryCollection(settings!);
                 });
