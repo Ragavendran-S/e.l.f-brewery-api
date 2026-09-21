@@ -207,8 +207,8 @@ builder.Services.AddScoped<IBreweryRepository>(sp =>
     // No DB configured: preserve previous behavior using BreweryRepository which delegates to upstream
     var upstream = sp.GetRequiredService<IUpstreamBreweryClient>();
     var repoLogger = sp.GetRequiredService<ILogger<BreweryRepository>>();
-    var paging = sp.GetRequiredService<IPagingHelper>();
-    return new BreweryRepository(upstream, null, repoLogger, paging);
+    // BreweryRepository is now an upstream-only implementation; construct with upstream client and logger.
+    return new BreweryRepository(upstream, repoLogger);
 });
 builder.Services.AddScoped<IBreweryService, BreweryService>();
 builder.Services.AddScoped<IBreweryFilter, BreweryFilter>();

@@ -1,0 +1,18 @@
+"Method","Url","RequestPayload","ResponseStatus","ResponseBody"
+"POST","http://localhost:5000/api/auth/login","{
+    """"Password"""":  """"password"""",
+    """"Username"""":  """"admin""""
+}","500",""
+"GET","http://localhost:5000/api/v1/breweries","","500",""
+"GET","http://localhost:5000/api/v1/breweries?search=ale&page=1&pageSize=5","","500",""
+"GET","http://localhost:5000/api/v1/breweries/autocomplete?query=ale","","500",""
+"GET","http://localhost:5000/api/v1/breweries/Sierra%20Nevada","","500",""
+"POST","http://localhost:5000/api/v1/breweries","{
+    """"BreweryType"""":  """"micro"""",
+    """"State"""":  """"TS"""",
+    """"Name"""":  """"Test Brewery From Script"""",
+    """"City"""":  """"Testville""""
+}","500",""
+"GET","http://localhost:5000/api/v2/breweries","","500",""
+"GET","http://localhost:5000/api/test/protected","","500",""
+"POST","http://localhost:5000/api/auth/validate","","500",""
