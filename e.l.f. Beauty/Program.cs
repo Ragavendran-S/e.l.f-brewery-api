@@ -15,6 +15,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using System.IO;
+using Microsoft.Extensions.Caching.Memory;
 
 var builder = WebApplication.CreateBuilder(args);
 // configure services...
@@ -181,16 +182,33 @@ builder.Services.AddMemoryCache();
 // Register in-memory brewery cache implementation
 builder.Services.AddScoped<IBreweryCache, MemoryBreweryCache>();
 builder.Services.AddHttpClient<IUpstreamBreweryClient, UpstreamBreweryClient>();
-// BreweryRepository depends on IUpstreamBreweryClient, BreweryDbContext, ILogger<BreweryRepository>, and IPagingHelper
-// Register BreweryRepository using a factory so we can supply a null BreweryDbContext
-// when no local DB is configured. BreweryRepository accepts a nullable BreweryDbContext.
+// Register IBreweryRepository implementations. When a real DbContext is available use the
+// EF Core implementation wrapped with a caching decorator. When no DbContext is configured
+// fall back to the upstream-backed BreweryRepository which accepts a nullable DbContext.
 builder.Services.AddScoped<IBreweryRepository>(sp =>
 {
-    var upstream = sp.GetRequiredService<IUpstreamBreweryClient>();
     var db = sp.GetService<BreweryDbContext>(); // may be null when no DB configured
+    if (db != null)
+    {
+        // Use EfCore repository when a relational DB is present
+        var efRepo = new ElfBreweryApi.Repositories.EfCoreBreweryRepository(db);
+
+        // Wrap with cached decorator if IMemoryCache is available
+        var cache = sp.GetService<IMemoryCache>();
+        if (cache != null)
+        {
+            var cacheLogger = sp.GetRequiredService<ILogger<CachedBreweryRepository>>();
+            return new CachedBreweryRepository(efRepo, cache, cacheLogger);
+        }
+
+        return efRepo;
+    }
+
+    // No DB configured: preserve previous behavior using BreweryRepository which delegates to upstream
+    var upstream = sp.GetRequiredService<IUpstreamBreweryClient>();
     var repoLogger = sp.GetRequiredService<ILogger<BreweryRepository>>();
     var paging = sp.GetRequiredService<IPagingHelper>();
-    return new BreweryRepository(upstream, db, repoLogger, paging);
+    return new BreweryRepository(upstream, null, repoLogger, paging);
 });
 builder.Services.AddScoped<IBreweryService, BreweryService>();
 builder.Services.AddScoped<IBreweryFilter, BreweryFilter>();

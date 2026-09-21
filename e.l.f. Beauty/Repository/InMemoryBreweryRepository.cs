@@ -37,7 +37,8 @@ public class CachedBreweryRepository : IBreweryRepository
         {
             entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
             _logger.LogInformation("Cache miss for breweries at {Time}", DateTime.UtcNow);
-            return await _inner.GetBreweriesAsync(options);
+            // Ensure we never pass a null options object to the inner repository implementation
+            return await _inner.GetBreweriesAsync(options ?? new BreweryQueryOptions());
         });
 
         return result ?? Enumerable.Empty<Brewery>();
