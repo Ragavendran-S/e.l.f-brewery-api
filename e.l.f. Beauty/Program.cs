@@ -146,7 +146,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddControllers();
 
 // Register paging helper for DI
-builder.Services.AddScoped<IPagingHelper, PagingHelper>();
+// IPagingHelper already registered above; avoid duplicate registration
 
 builder.Services.AddOptions<JwtOptionsAuth>()
     .Bind(builder.Configuration.GetSection("Jwt"))
