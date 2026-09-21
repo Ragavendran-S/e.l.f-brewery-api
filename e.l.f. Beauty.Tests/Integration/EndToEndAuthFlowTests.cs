@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.EntityFrameworkCore;
 using Xunit;
 
 namespace e.l.f._Beauty.Tests.Integration
@@ -63,6 +65,19 @@ namespace e.l.f._Beauty.Tests.Integration
                         ["Auth:Password"] = "password"
                     };
                     cfg.AddInMemoryCollection(settings!);
+                });
+
+                // Replace DB with an isolated in-memory provider so tests are deterministic and do not share
+                // the same SQLite file used by default app configuration.
+                builder.ConfigureServices(services =>
+                {
+                    // Remove existing DbContext registrations so we can provide a test-scoped in-memory DB
+                    services.RemoveAll(typeof(Microsoft.EntityFrameworkCore.DbContextOptions<e.l.f._Beauty.Repository.BreweryDbContext>));
+                    services.RemoveAll(typeof(e.l.f._Beauty.Repository.BreweryDbContext));
+
+                    // Add an isolated in-memory database per test run
+                    services.AddDbContext<e.l.f._Beauty.Repository.BreweryDbContext>(options =>
+                        options.UseInMemoryDatabase("e2e-auth-db-" + System.Guid.NewGuid().ToString()));
                 });
 
                 // Do not replace authentication - exercise real JWT issuance/validation
