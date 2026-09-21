@@ -5,11 +5,14 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication;
 using Xunit;
 
 namespace e.l.f._Beauty.Tests.Integration
 {
+    [Collection("IntegrationTests")]
     public class AuthenticationIntegrationTests : IClassFixture<WebApplicationFactory<Program>>
     {
         private readonly WebApplicationFactory<Program> _factory;
@@ -35,6 +38,23 @@ namespace e.l.f._Beauty.Tests.Integration
                 return;
             }
             // Ensure the test host has required Jwt configuration so the app starts in CI
+            // Compute and export Jwt key/issuer/audience into environment variables so the
+            // Program startup (which reads configuration early) will pick them up when
+            // configuring the JWT middleware. Use a deterministic key derived from a
+            // known phrase to keep CI/dev behavior stable.
+            using var sha512 = System.Security.Cryptography.SHA512.Create();
+            var keyBytes = sha512.ComputeHash(System.Text.Encoding.UTF8.GetBytes("ci-integration-test-key"));
+            var base64Key = System.Convert.ToBase64String(keyBytes);
+            // Set environment variables so Program.ResolveJwtKey picks them up during host startup.
+            // Set both colon and double-underscore forms so configuration providers
+            // that prefer environment variables with different naming conventions pick them up.
+            Environment.SetEnvironmentVariable("Jwt:Key", base64Key);
+            Environment.SetEnvironmentVariable("Jwt__Key", base64Key);
+            Environment.SetEnvironmentVariable("Jwt:Issuer", "brewery-api");
+            Environment.SetEnvironmentVariable("Jwt__Issuer", "brewery-api");
+            Environment.SetEnvironmentVariable("Jwt:Audience", "brewery-api");
+            Environment.SetEnvironmentVariable("Jwt__Audience", "brewery-api");
+
             var factoryWithConfig = _factory.WithWebHostBuilder(builder =>
             {
                 // Use the host environment setter available on IWebHostBuilder via Microsoft.AspNetCore.Hosting
@@ -58,52 +78,55 @@ namespace e.l.f._Beauty.Tests.Integration
                 }
                 builder.ConfigureAppConfiguration((ctx, cfg) =>
                 {
-                    // Derive a stable 64-byte key by hashing a known phrase so the runtime
-                    // crypto provider receives a key size compatible with HMAC-SHA512.
-                    using var sha512 = System.Security.Cryptography.SHA512.Create();
-                    var keyBytes = sha512.ComputeHash(System.Text.Encoding.UTF8.GetBytes("ci-integration-test-key"));
-                    var base64Key = System.Convert.ToBase64String(keyBytes);
-
+                    // Add fallback in-memory values for credentials only; JWT key/issuer/audience
+                    // are provided via environment variables to ensure Program startup picks them up.
                     var settings = new System.Collections.Generic.Dictionary<string, string?>
                     {
-                        ["Jwt:Key"] = base64Key,
-                        ["Jwt:Issuer"] = "brewery-api",
-                        ["Jwt:Audience"] = "brewery-api",
                         ["Auth:Username"] = "admin",
                         ["Auth:Password"] = "password"
                     };
                     cfg.AddInMemoryCollection(settings!);
                 });
-                // Replace real authentication with a test authentication handler so the
-                // app can be exercised without real JWTs. ConfigureServices runs after
-                // the app's services are registered so this overrides the defaults for tests.
+                // Configure isolated in-memory DB for deterministic test runs and
+                // do not replace authentication - exercise the real JWT issuance/validation pipeline.
                 builder.ConfigureServices(services =>
                 {
-                    // Add the test auth scheme and make it the default for authentication
-                    services.AddAuthentication(options =>
-                    {
-                        options.DefaultAuthenticateScheme = "Test";
-                        options.DefaultChallengeScheme = "Test";
-                    })
-                    .AddScheme<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, TestAuthHandler>(
-                        "Test", opts => { });
+                    // Remove existing DbContext registrations so we can provide a test-scoped in-memory DB
+                    services.RemoveAll(typeof(Microsoft.EntityFrameworkCore.DbContextOptions<e.l.f._Beauty.Repository.BreweryDbContext>));
+                    services.RemoveAll(typeof(e.l.f._Beauty.Repository.BreweryDbContext));
 
-                    services.AddAuthorization(options =>
-                    {
-                        options.DefaultPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
-                            .AddAuthenticationSchemes("Test")
-                            .RequireAuthenticatedUser()
-                            .Build();
-                    });
+                    // Add an isolated in-memory database per test run
+                    services.AddDbContext<e.l.f._Beauty.Repository.BreweryDbContext>(options =>
+                        options.UseInMemoryDatabase("auth-integration-db-" + System.Guid.NewGuid().ToString()));
                 });
             });
 
             var client = factoryWithConfig.CreateClient();
 
-            // Middleware above injects an authenticated principal for every request,
-            // so protected endpoints can be exercised without auth package wiring.
+            // Exercise the real JWT issuance pipeline: call login to obtain a token
+            // and use it to call the protected endpoint.
+            var loginPayload = JsonSerializer.Serialize(new { Username = "admin", Password = "password" });
+            var loginContent = new StringContent(loginPayload, Encoding.UTF8, "application/json");
+            var loginResponse = await client.PostAsync("/api/auth/login", loginContent);
+            loginResponse.EnsureSuccessStatusCode();
+            var loginJson = await loginResponse.Content.ReadAsStringAsync();
+            using var loginDoc = JsonDocument.Parse(loginJson);
+            Assert.True(loginDoc.RootElement.TryGetProperty("token", out var tokenElem));
+            var token = tokenElem.GetString();
+            Assert.False(string.IsNullOrWhiteSpace(token));
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            var protectedResponse = await client.GetAsync("/api/test/protected");
+            HttpResponseMessage protectedResponse = null!;
+            // Sometimes the first request may race with host startup; retry a few times before failing to reduce flakiness.
+            for (int attempt = 0; attempt < 10; attempt++)
+            {
+                protectedResponse = await client.GetAsync("/api/test/protected");
+                if (protectedResponse.IsSuccessStatusCode)
+                    break;
+                // Backoff to give the host time to finish any background startup work
+                await Task.Delay(200 * (attempt + 1));
+            }
+
             if (!protectedResponse.IsSuccessStatusCode)
             {
                 var body = await protectedResponse.Content.ReadAsStringAsync();
