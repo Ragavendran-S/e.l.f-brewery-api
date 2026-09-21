@@ -5,13 +5,15 @@ public class CachedBreweryRepository : IBreweryRepository
 {
     private readonly IBreweryRepository _inner;
     private readonly IMemoryCache _cache;
+    private readonly IBreweryCache _registryCache;
     private readonly ILogger<CachedBreweryRepository> _logger;
 
-    public CachedBreweryRepository(IBreweryRepository inner, IMemoryCache cache, ILogger<CachedBreweryRepository> logger)
+    public CachedBreweryRepository(IBreweryRepository inner, IMemoryCache cache, ILogger<CachedBreweryRepository> logger, IBreweryCache registryCache)
     {
         _inner = inner;
         _cache = cache;
         _logger = logger;
+        _registryCache = registryCache;
     }
 
     public async Task<BulkInsertResult> AddBreweriesAsync(IEnumerable<Brewery> breweries)
@@ -20,11 +22,23 @@ public class CachedBreweryRepository : IBreweryRepository
         // Delegate to inner repository which may support bulk operations
         var res = await _inner.AddBreweriesAsync(breweries);
 
-        // Invalidate caches
-        _cache.Remove("breweries");
-        foreach (var b in breweries)
+        // Invalidate caches by prefix so variant list queries are cleared
+        try
         {
-            _cache.Remove($"brewery:{b.Id}");
+            _registryCache.InvalidateByPrefix("breweries:");
+            foreach (var b in breweries)
+            {
+                _registryCache.Remove($"brewery:{b.Id}");
+            }
+        }
+        catch
+        {
+            // Fallback to direct removal if registry not available or fails
+            _cache.Remove("breweries");
+            foreach (var b in breweries)
+            {
+                _cache.Remove($"brewery:{b.Id}");
+            }
         }
         _logger.LogInformation("Cache invalidated after adding breweries at {Time}", DateTime.UtcNow);
         return res;
@@ -33,6 +47,9 @@ public class CachedBreweryRepository : IBreweryRepository
     public async Task<IEnumerable<Brewery>> GetBreweriesAsync(BreweryQueryOptions options)
     {
         var cacheKey = options == null ? "breweries:all" : $"breweries:page={options.Page}:size={options.PageSize}:search={options.Search}:city={options.City}:sort={options.SortBy}";
+        // Ensure key is recorded in registry via the IBreweryCache implementation
+        _registryCache?.GetOrFetchAsync(cacheKey, () => _inner.GetBreweriesAsync(options ?? new BreweryQueryOptions()));
+
         var result = await _cache.GetOrCreateAsync(cacheKey, async entry =>
         {
             entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);

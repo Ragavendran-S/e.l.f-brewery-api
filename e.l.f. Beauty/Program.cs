@@ -198,7 +198,8 @@ builder.Services.AddScoped<IBreweryRepository>(sp =>
         if (cache != null)
         {
             var cacheLogger = sp.GetRequiredService<ILogger<CachedBreweryRepository>>();
-            return new CachedBreweryRepository(efRepo, cache, cacheLogger);
+            var registryCache = sp.GetRequiredService<IBreweryCache>();
+            return new CachedBreweryRepository(efRepo, cache, cacheLogger, registryCache);
         }
 
         return efRepo;

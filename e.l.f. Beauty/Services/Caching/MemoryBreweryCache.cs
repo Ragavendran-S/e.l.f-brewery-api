@@ -30,6 +30,13 @@ public class MemoryBreweryCache : IBreweryCache
         }
 
         _logger.LogDebug("Cache lookup miss for {Key}, fetching from source", key);
+
+        // Record the cache key in a registry so we can support prefix invalidation later.
+        const string KEY_REGISTRY = "__brewery_cache_keys__";
+        var registry = _cache.GetOrCreate(KEY_REGISTRY, entry => new HashSet<string>());
+        registry.Add(key);
+        _cache.Set(KEY_REGISTRY, registry, TimeSpan.FromMinutes(60));
+
         var result = await _cache.GetOrCreateAsync(key, async entry =>
         {
             entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
@@ -38,5 +45,31 @@ public class MemoryBreweryCache : IBreweryCache
         });
 
         return result ?? Enumerable.Empty<Brewery>();
+    }
+
+    public void InvalidateByPrefix(string prefix)
+    {
+        // IMemoryCache does not provide prefix invalidation out of the box. To support
+        // this in a simple way, store known keys in a set under a reserved key and use
+        // that list to enumerate and remove matching keys.
+        const string KEY_REGISTRY = "__brewery_cache_keys__";
+        if (!_cache.TryGetValue<HashSet<string>>(KEY_REGISTRY, out var registry) || registry == null)
+            return;
+
+        var toRemove = registry.Where(k => k.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)).ToList();
+        foreach (var k in toRemove)
+        {
+            _cache.Remove(k);
+            registry.Remove(k);
+            _logger.LogInformation("Invalidated cache entry {Key} by prefix {Prefix}", k, prefix);
+        }
+
+        // Update registry
+        _cache.Set(KEY_REGISTRY, registry, TimeSpan.FromMinutes(60));
+    }
+
+    public void Remove(string key)
+    {
+        _cache.Remove(key);
     }
 }
