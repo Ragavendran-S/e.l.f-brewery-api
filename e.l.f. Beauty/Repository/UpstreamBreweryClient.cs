@@ -177,7 +177,11 @@ namespace e.l.f._Beauty.Repository
                     try
                     {
                         var breweries = JsonSerializer.Deserialize<IEnumerable<Brewery>>(json, options);
-                        if (breweries != null && breweries.Any())
+                        // If the upstream returns a JSON array (even empty) that's a valid response for this
+                        // candidate endpoint. Return it immediately rather than continuing to try other
+                        // candidate URLs. This preserves deterministic request ordering for callers and
+                        // makes behavior predictable in tests that inspect the first attempted URL.
+                        if (breweries != null)
                             return breweries;
                     }
                     catch (JsonException)
