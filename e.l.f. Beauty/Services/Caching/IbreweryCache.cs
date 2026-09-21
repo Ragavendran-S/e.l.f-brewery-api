@@ -13,4 +13,9 @@ public interface IBreweryCache
     /// Remove a specific cache entry by exact key.
     /// </summary>
     void Remove(string key);
+    /// <summary>
+    /// Register a cache key in the internal registry without fetching its value.
+    /// Useful to track keys for later prefix invalidation.
+    /// </summary>
+    void RegisterKey(string key);
 }

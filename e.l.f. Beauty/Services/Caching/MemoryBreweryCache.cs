@@ -33,7 +33,9 @@ public class MemoryBreweryCache : IBreweryCache
 
         // Record the cache key in a registry so we can support prefix invalidation later.
         const string KEY_REGISTRY = "__brewery_cache_keys__";
+        // Use a thread-safe get-or-create pattern and ensure registry is non-null
         var registry = _cache.GetOrCreate(KEY_REGISTRY, entry => new HashSet<string>());
+        registry ??= new HashSet<string>();
         registry.Add(key);
         _cache.Set(KEY_REGISTRY, registry, TimeSpan.FromMinutes(60));
 
@@ -56,7 +58,7 @@ public class MemoryBreweryCache : IBreweryCache
         if (!_cache.TryGetValue<HashSet<string>>(KEY_REGISTRY, out var registry) || registry == null)
             return;
 
-        var toRemove = registry.Where(k => k.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)).ToList();
+        var toRemove = registry.Where(k => k != null && k.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)).ToList();
         foreach (var k in toRemove)
         {
             _cache.Remove(k);
@@ -71,5 +73,14 @@ public class MemoryBreweryCache : IBreweryCache
     public void Remove(string key)
     {
         _cache.Remove(key);
+    }
+
+    public void RegisterKey(string key)
+    {
+        const string KEY_REGISTRY = "__brewery_cache_keys__";
+        var registry = _cache.GetOrCreate(KEY_REGISTRY, entry => new HashSet<string>());
+        registry ??= new HashSet<string>();
+        registry.Add(key);
+        _cache.Set(KEY_REGISTRY, registry, TimeSpan.FromMinutes(60));
     }
 }

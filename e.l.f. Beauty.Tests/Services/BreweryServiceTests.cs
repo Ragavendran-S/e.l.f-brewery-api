@@ -71,5 +71,9 @@ public class BreweryServiceTests
             _store[key] = fetched;
             return Task.FromResult(fetched);
         }
+
+        public void InvalidateByPrefix(string prefix) { /* no-op for tests */ }
+        public void Remove(string key) { _store.Remove(key); }
+        public void RegisterKey(string key) { /* no-op for tests */ }
     }
 }
