@@ -127,7 +127,8 @@ namespace e.l.f._Beauty.Repository
         {
             var json = JsonSerializer.Serialize(brewery);
             using var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
-            return await _httpClient.PostAsync("/v1/breweries", content);
+            // Use the absolute BaseUrl so this call works even when the HttpClient has no BaseAddress configured.
+            return await _httpClient.PostAsync(BaseUrl, content);
         }
     }
 }
