@@ -34,8 +34,33 @@ namespace e.l.f._Beauty.Services
         {
             try
             {
-                var breweries = await _cache.GetOrFetchAsync("breweries", () => _repository.GetBreweriesAsync(options));
+                // Create a cache key that includes the relevant query options so different
+                // requests (page, pageSize, sort, search, city, and user coords) do not
+                // collide and return stale/incorrect data. Only include normalized values.
+                options ??= new BreweryQueryOptions();
+                var keyParts = new List<string>
+                {
+                    $"page={options.Page}",
+                    $"pageSize={options.PageSize}",
+                    $"sortBy={Uri.EscapeDataString(options.SortBy ?? string.Empty)}",
+                    $"asc={options.Ascending}",
+                    $"search={Uri.EscapeDataString(options.Search ?? string.Empty)}",
+                    $"city={Uri.EscapeDataString(options.City ?? string.Empty)}",
+                };
+                if (options.UserLat.HasValue && options.UserLng.HasValue)
+                {
+                    keyParts.Add($"ulat={options.UserLat.Value}");
+                    keyParts.Add($"ulng={options.UserLng.Value}");
+                }
 
+                var cacheKey = "breweries:" + string.Join("&", keyParts);
+
+                // Fetch a dataset specific to the requested options from cache/repository.
+                var breweries = await _cache.GetOrFetchAsync(cacheKey, () => _repository.GetBreweriesAsync(options));
+
+                // Apply any additional in-memory filtering/sorting that the repository
+                // could not perform. Note: because cache keys include the options, this
+                // avoids returning unrelated cached datasets.
                 breweries = _filter.Apply(breweries, options);
 
                 var sorter = _sorterFactory.GetSorter(options.SortBy ?? string.Empty);
