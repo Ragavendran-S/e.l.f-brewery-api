@@ -26,7 +26,7 @@ namespace e.l.f._Beauty.Repository
             : this(upstream, logger)
         {
             _dbContext = dbContext;
-            _pagingHelper = pagingHelper;
+            _pagingHelper = pagingHelper ?? throw new ArgumentNullException(nameof(pagingHelper));
         }
 
         public async Task<BulkInsertResult> AddBreweriesAsync(IEnumerable<Brewery> breweries)

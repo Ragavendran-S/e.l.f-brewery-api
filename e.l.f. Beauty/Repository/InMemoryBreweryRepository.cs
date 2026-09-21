@@ -23,22 +23,25 @@ public class CachedBreweryRepository : IBreweryRepository
         var res = await _inner.AddBreweriesAsync(breweries);
 
         // Invalidate caches by prefix so variant list queries are cleared
-        try
-        {
-            _registryCache.InvalidateByPrefix("breweries:");
-            foreach (var b in breweries)
+            try
             {
-                _registryCache.Remove($"brewery:{b.Id}");
+                _registryCache.InvalidateByPrefix("breweries:");
+                foreach (var b in breweries)
+                {
+                    // Guard against null elements in the incoming collection to satisfy nullable analysis
+                    if (b == null) continue;
+                    _registryCache.Remove($"brewery:{b.Id}");
+                }
             }
-        }
         catch
         {
             // Fallback to direct removal if registry not available or fails
             _cache.Remove("breweries");
-            foreach (var b in breweries)
-            {
-                _cache.Remove($"brewery:{b.Id}");
-            }
+                foreach (var b in breweries)
+                {
+                    if (b == null) continue;
+                    _cache.Remove($"brewery:{b.Id}");
+                }
         }
         _logger.LogInformation("Cache invalidated after adding breweries at {Time}", DateTime.UtcNow);
         return res;
