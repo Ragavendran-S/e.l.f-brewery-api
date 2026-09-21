@@ -181,6 +181,10 @@ builder.Services.AddControllers();
 builder.Services.AddMemoryCache();
 // Register in-memory brewery cache implementation
 builder.Services.AddScoped<IBreweryCache, MemoryBreweryCache>();
+// Register concrete repository implementations so they are available for DI consumers
+// and to avoid leaving tested implementations unreachable at runtime.
+builder.Services.AddScoped<ElfBreweryApi.Repositories.EfCoreBreweryRepository>();
+builder.Services.AddScoped<CachedBreweryRepository>();
 // Configure the upstream brewery HTTP client with a sensible BaseAddress so any
 // relative URIs used by the client will work even if callers forget to set a
 // BaseAddress on the HttpClient. The client implementation prefers absolute
