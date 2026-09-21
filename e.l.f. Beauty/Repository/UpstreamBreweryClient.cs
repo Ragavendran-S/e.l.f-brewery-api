@@ -105,10 +105,33 @@ namespace e.l.f._Beauty.Repository
                             b.Country = countryProp.GetString() ?? string.Empty;
                         if (item.TryGetProperty("phone", out var phoneProp) && phoneProp.ValueKind == JsonValueKind.String)
                             b.Phone = phoneProp.GetString() ?? string.Empty;
-                        if (item.TryGetProperty("latitude", out var latProp) && latProp.ValueKind == JsonValueKind.String)
-                            double.TryParse(latProp.GetString(), out var latVal);
-                        if (item.TryGetProperty("longitude", out var lngProp) && lngProp.ValueKind == JsonValueKind.String)
-                            double.TryParse(lngProp.GetString(), out var lngVal);
+
+                        // Parse latitude/longitude tolerantly and assign to the Brewery object.
+                        if (item.TryGetProperty("latitude", out var latProp))
+                        {
+                            if (latProp.ValueKind == JsonValueKind.Number && latProp.TryGetDouble(out var dbl))
+                            {
+                                b.Latitude = dbl;
+                            }
+                            else if (latProp.ValueKind == JsonValueKind.String)
+                            {
+                                if (double.TryParse(latProp.GetString(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var parsedLat))
+                                    b.Latitude = parsedLat;
+                            }
+                        }
+
+                        if (item.TryGetProperty("longitude", out var lngProp))
+                        {
+                            if (lngProp.ValueKind == JsonValueKind.Number && lngProp.TryGetDouble(out var dblLng))
+                            {
+                                b.Longitude = dblLng;
+                            }
+                            else if (lngProp.ValueKind == JsonValueKind.String)
+                            {
+                                if (double.TryParse(lngProp.GetString(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var parsedLng))
+                                    b.Longitude = parsedLng;
+                            }
+                        }
 
                         list.Add(b);
                     }
