@@ -121,8 +121,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         }
         catch (Exception ex)
         {
-            // If key resolution fails at startup, log and rethrow so developers get a clear failure
-            var startupLogger = builder.Services.BuildServiceProvider().GetService<ILogger<Program>>();
+            // If key resolution fails at startup, log and rethrow so developers get a clear failure.
+            // Avoid building the full service provider here; create a lightweight LoggerFactory
+            // to emit the startup diagnostic and dispose it immediately.
+            using var tempLoggerFactory = LoggerFactory.Create(lb =>
+            {
+                lb.AddConsole();
+                lb.SetMinimumLevel(LogLevel.Information);
+            });
+            var startupLogger = tempLoggerFactory.CreateLogger<Program>();
             startupLogger?.LogCritical(e.l.f.Logging.EventIds.JwtKeyWarning, ex, "Failed to resolve JWT signing key: {Message}", ex.Message);
             throw;
         }
@@ -157,7 +164,14 @@ else
     // No DB connection configured. Do not register BreweryDbContext so the
     // BreweryRepository will receive a null DbContext and will fall back to
     // the upstream API client for reads/writes.
-    var startupLogger = builder.Services.BuildServiceProvider().GetService<ILogger<Program>>();
+    // Avoid building the full service provider; create a temporary LoggerFactory
+    // for emitting this startup diagnostic and dispose it immediately.
+    using var tmpFactory = LoggerFactory.Create(lb =>
+    {
+        lb.AddConsole();
+        lb.SetMinimumLevel(LogLevel.Information);
+    });
+    var startupLogger = tmpFactory.CreateLogger<Program>();
     startupLogger?.LogInformation("No DefaultConnection configured; running without local DB. BreweryRepository will use upstream API.");
 }
 // Add services to the container.
