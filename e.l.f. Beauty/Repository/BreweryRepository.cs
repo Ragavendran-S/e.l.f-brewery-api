@@ -115,6 +115,14 @@ namespace e.l.f._Beauty.Repository
             }
 
             var result = await _upstream.GetBreweryByNameAsync(name);
+            // If upstream by_name lookup returns no results try the search/autocomplete
+            // endpoints which may return matches for partial names.
+            if (result == null || !result.Any())
+            {
+                var search = await _upstream.SearchBreweriesAsync(name);
+                return search?.Cast<Brewery?>() ?? Enumerable.Empty<Brewery?>();
+            }
+
             // Map upstream "IEnumerable<Brewery>" to "IEnumerable<Brewery?>" expected by the interface
             return result.Cast<Brewery?>();
         }

@@ -202,8 +202,11 @@ builder.Services.AddScoped<IBreweryRepository>(sp =>
     var db = sp.GetService<BreweryDbContext>(); // may be null when no DB configured
     if (db != null)
     {
-        // Use EfCore repository when a relational DB is present
-        var efRepo = new e.l.f._Beauty.Repository.EfCoreBreweryRepository(db);
+        // Use EfCore repository when a relational DB is present. Resolve the concrete
+        // EfCoreBreweryRepository from the DI container so its dependencies (including
+        // the upstream client) are injected and the repository can fall back to the
+        // upstream API when the local DB is empty.
+        var efRepo = sp.GetRequiredService<e.l.f._Beauty.Repository.EfCoreBreweryRepository>();
 
         // Wrap with cached decorator if IMemoryCache is available
         var cache = sp.GetService<IMemoryCache>();
