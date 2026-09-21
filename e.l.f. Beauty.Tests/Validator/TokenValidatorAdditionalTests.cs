@@ -23,7 +23,7 @@ namespace e.l.f._Beauty.Tests.Validator
             return new ConfigurationBuilder().AddInMemoryCollection(dict).Build();
         }
 
-        private string CreateToken(string base64Key, DateTime? expires = null, string signingKeyOverride = null)
+        private string CreateToken(string base64Key, DateTime? expires = null, string? signingKeyOverride = null)
         {
             var keyBytes = JwtKeyHelper.GetKeyBytes(signingKeyOverride ?? base64Key);
             var signingKey = new SymmetricSecurityKey(keyBytes);

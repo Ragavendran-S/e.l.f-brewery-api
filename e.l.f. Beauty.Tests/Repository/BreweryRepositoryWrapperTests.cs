@@ -69,7 +69,7 @@ namespace e.l.f._Beauty.Tests.Repository
         {
             public Task<HttpResponseMessage> PostBreweryAsync(Brewery brewery) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
             public Task<IEnumerable<Brewery>> GetBreweryByNameAsync(string name) => throw new InvalidOperationException("Should not be called");
-            public Task<IEnumerable<Brewery>> GetBreweriesAsync(BreweryQueryOptions options) => throw new InvalidOperationException("Should not be called");
+            public Task<IEnumerable<Brewery>> GetBreweriesAsync(BreweryQueryOptions? options) => throw new InvalidOperationException("Should not be called");
             public Task<IEnumerable<Brewery>> SearchBreweriesAsync(string query) => throw new InvalidOperationException("Should not be called");
         }
 
@@ -79,7 +79,7 @@ namespace e.l.f._Beauty.Tests.Repository
             public bool WasCalled { get; private set; }
             public Task<HttpResponseMessage> PostBreweryAsync(Brewery brewery) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
             public Task<IEnumerable<Brewery>> GetBreweryByNameAsync(string name) => Task.FromResult<IEnumerable<Brewery>>(new[] { new Brewery { Id = "u1", Name = "UpstreamMatch" } });
-            public Task<IEnumerable<Brewery>> GetBreweriesAsync(BreweryQueryOptions options)
+            public Task<IEnumerable<Brewery>> GetBreweriesAsync(BreweryQueryOptions? options)
             {
                 WasCalled = true;
                 var list = new List<Brewery> { new Brewery { Id = "u1", Name = "Upstream 1" } };

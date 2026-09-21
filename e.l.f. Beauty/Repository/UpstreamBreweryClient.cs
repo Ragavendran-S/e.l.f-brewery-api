@@ -6,7 +6,7 @@ namespace e.l.f._Beauty.Repository
 {
     public interface IUpstreamBreweryClient
     {
-        Task<IEnumerable<Brewery>> GetBreweriesAsync(BreweryQueryOptions options);
+        Task<IEnumerable<Brewery>> GetBreweriesAsync(BreweryQueryOptions? options);
         Task<IEnumerable<Brewery>> GetBreweryByNameAsync(string name);
         Task<IEnumerable<Brewery>> SearchBreweriesAsync(string query);
         Task<HttpResponseMessage> PostBreweryAsync(Brewery brewery);
@@ -32,7 +32,7 @@ namespace e.l.f._Beauty.Repository
             return JsonSerializer.Deserialize<IEnumerable<Brewery>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? Enumerable.Empty<Brewery>();
         }
 
-        public async Task<IEnumerable<Brewery>> GetBreweriesAsync(BreweryQueryOptions options)
+        public async Task<IEnumerable<Brewery>> GetBreweriesAsync(BreweryQueryOptions? options)
         {
             // The upstream API does not support our full query options. If a search term is provided prefer the
             // autocomplete/search endpoint. Otherwise fall back to fetching the first page worth of items.

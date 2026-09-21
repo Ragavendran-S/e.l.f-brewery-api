@@ -8,7 +8,7 @@ namespace e.l.f._Beauty.Tests.Utils
     {
         public List<LogEntry> Entries { get; } = new List<LogEntry>();
 
-        public IDisposable BeginScope<TState>(TState state) => NullScope.Instance;
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => NullScope.Instance;
 
         public bool IsEnabled(LogLevel logLevel) => true;
 
