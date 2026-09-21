@@ -141,6 +141,22 @@ namespace e.l.f._Beauty.Repository
 
         public async Task<IEnumerable<Brewery?>> GetBreweryByNameAsync(string name)
         {
+            // Prefer local DB when available to follow DB-first pattern used elsewhere.
+            if (_dbContext != null)
+            {
+                if (string.IsNullOrWhiteSpace(name))
+                    return Enumerable.Empty<Brewery?>();
+
+                var pattern = $"%{name}%";
+                var results = await _dbContext.Breweries
+                    .AsNoTracking()
+                    .Where(b => EF.Functions.Like(b.Name, pattern))
+                    .ToListAsync();
+
+                return results.Cast<Brewery?>();
+            }
+
+            // Fallback to upstream client when no DB is available.
             return await _upstream.GetBreweryByNameAsync(name);
         }
 
