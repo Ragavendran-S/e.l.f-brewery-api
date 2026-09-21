@@ -62,8 +62,8 @@ namespace e.l.f._Beauty.Repository
 
         public async Task<IEnumerable<Brewery>> GetBreweriesAsync(BreweryQueryOptions options)
         {
-            // If DbContext is available, use it for efficient paging/filtering; otherwise defer to upstream.
-            if (_dbContext != null && _pagingHelper != null)
+            // If DbContext is available, use it for DB-backed paging/filtering; otherwise defer to upstream.
+            if (_dbContext != null)
             {
                 var query = _dbContext.Breweries.AsNoTracking().AsQueryable();
                 if (!string.IsNullOrWhiteSpace(options?.Search))
@@ -81,10 +81,17 @@ namespace e.l.f._Beauty.Repository
 
                 var page = options?.Page ?? 1;
                 var pageSize = options?.PageSize ?? 10;
-                var paged = _pagingHelper.ApplyPaging(query, page, pageSize);
-                var items = await paged.ToListAsync();
-                // Return DB results directly when a DbContext is available (DB-first semantics).
-                return items;
+
+                // Use provided paging helper when available; otherwise apply simple LINQ pagination.
+                if (_pagingHelper != null)
+                {
+                    var paged = _pagingHelper.ApplyPaging(query, page, pageSize);
+                    var items = await paged.ToListAsync();
+                    return items;
+                }
+
+                var itemsFallback = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+                return itemsFallback;
             }
 
             return await _upstream.GetBreweriesAsync(options);

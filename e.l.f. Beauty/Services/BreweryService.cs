@@ -38,19 +38,23 @@ namespace e.l.f._Beauty.Services
                 // requests (page, pageSize, sort, search, city, and user coords) do not
                 // collide and return stale/incorrect data. Only include normalized values.
                 options ??= new BreweryQueryOptions();
+                string Norm(string? s) => string.IsNullOrWhiteSpace(s) ? string.Empty : Uri.EscapeDataString(s.Trim().ToLowerInvariant());
+                string NormDouble(double d) => d.ToString("F4", System.Globalization.CultureInfo.InvariantCulture);
+
                 var keyParts = new List<string>
                 {
-                    $"page={options.Page}",
-                    $"pageSize={options.PageSize}",
-                    $"sortBy={Uri.EscapeDataString(options.SortBy ?? string.Empty)}",
+                    $"page={Math.Max(1, options.Page)}",
+                    $"pageSize={Math.Clamp(options.PageSize, 1, 100)}",
+                    $"sortBy={Norm(options.SortBy)}",
                     $"asc={options.Ascending}",
-                    $"search={Uri.EscapeDataString(options.Search ?? string.Empty)}",
-                    $"city={Uri.EscapeDataString(options.City ?? string.Empty)}",
+                    $"search={Norm(options.Search)}",
+                    $"city={Norm(options.City)}",
                 };
                 if (options.UserLat.HasValue && options.UserLng.HasValue)
                 {
-                    keyParts.Add($"ulat={options.UserLat.Value}");
-                    keyParts.Add($"ulng={options.UserLng.Value}");
+                    // Round user-provided coordinates to 4 decimal places to avoid excessive key fragmentation
+                    keyParts.Add($"ulat={NormDouble(options.UserLat.Value)}");
+                    keyParts.Add($"ulng={NormDouble(options.UserLng.Value)}");
                 }
 
                 var cacheKey = "breweries:" + string.Join("&", keyParts);
