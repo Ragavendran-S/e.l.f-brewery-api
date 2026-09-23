@@ -1,0 +1,40 @@
+# Ignore local SQLite database file
+brewery.db
+e.l.f Beauty/brewery.db
+e.l.f. Beauty/brewery.db-shm
+e.l.f. Beauty/brewery.db-wal
+api-execution-results.csv
+swagger.json
+swagger-utf8.json
+swagger-utf16.json
+
+# Common Visual Studio / .NET ignores
+.bin/
+.published/
+.github/workflows/
+**/obj/
+**/bin/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.DS_Store
+
+# Rider
+.idea/
+
+# Visual Studio
+.vs/
+
+
+# ASP.NET Core
+secrets.json
+
+# Visual Studio Code
+.vscode/
+
+# GitHub Actions workflows (ignored per user request)
+.github/workflows/
+
+# Published artifacts
+published/

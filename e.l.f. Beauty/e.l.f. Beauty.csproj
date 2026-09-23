@@ -1,0 +1,59 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <UserSecretsId>e.l.f-beauty-12345</UserSecretsId>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>e.l.f._Beauty</RootNamespace>
+    <!-- Do not suppress compiler warnings globally; fix them instead. -->
+    <SuppressAllWarnings>false</SuppressAllWarnings>
+    <!-- Preserve existing NoWarn; do not append ALL. -->
+    <NoWarn>$(NoWarn);NU1903</NoWarn>
+    <!-- Do not suppress transitive package TFM support warnings globally. -->
+    <SuppressTfmSupportBuildWarnings>false</SuppressTfmSupportBuildWarnings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="12.0.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.14.0" />
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.14.0" />
+    <PackageReference Include="Microsoft.IdentityModel.Protocols" Version="8.14.0" />
+    <PackageReference Include="Microsoft.IdentityModel.Logging" Version="8.14.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning" Version="5.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer" Version="5.1.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.0" />
+    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.12-pre20260709125052" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Moq" Version="4.20.72" />
+    <!-- Removed AutoMapper.Extensions.Microsoft.DependencyInjection to register AutoMapper manually for v15 -->
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="brewery.db" />
+    <None Remove="Repository\" />
+    <None Remove="Services\" />
+    <None Remove="Validator\" />
+    <None Remove="AutoMapper\" />
+    <None Remove="Services\Filter\" />
+    <None Remove="Services\Sorting\" />
+    <None Remove="Services\Caching\" />
+    <None Remove="Services\Paging\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Services\" />
+    <Folder Include="AutoMapper\" />
+    <Folder Include="Services\Filter\" />
+    <Folder Include="Services\Sorting\" />
+    <Folder Include="Services\Caching\" />
+    <Folder Include="Services\Paging\" />
+  </ItemGroup>
+  
+</Project>

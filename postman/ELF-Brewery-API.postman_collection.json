@@ -1,0 +1,47 @@
+{
+  "info": {
+    "name": "ELF Brewery API",
+    "_postman_id": "generated",
+    "description": "Minimal collection: Login and call protected endpoint",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth - Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"Username\": \"admin\", \"Password\": \"password\" }"
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/auth/login",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api","auth","login"]
+        }
+      }
+    },
+    {
+      "name": "Breweries - Protected",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "http://localhost:5000/api/v1/breweries",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api","v1","breweries"]
+        }
+      }
+    }
+  ],
+  "event": []
+}
