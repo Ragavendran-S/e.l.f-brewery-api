@@ -31,6 +31,13 @@ namespace e.l.f._Beauty.Tests.Integration
             var dbFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"brewery-seed-{System.Guid.NewGuid()}.db");
             var clientFactory = _factory.WithWebHostBuilder(builder =>
             {
+                using var sha512 = System.Security.Cryptography.SHA512.Create();
+                var keyBytes = sha512.ComputeHash(System.Text.Encoding.UTF8.GetBytes("e2e-integration-key"));
+                var base64Key = System.Convert.ToBase64String(keyBytes);
+                System.Environment.SetEnvironmentVariable("Jwt__Key", base64Key);
+                System.Environment.SetEnvironmentVariable("Jwt__Issuer", "brewery-api");
+                System.Environment.SetEnvironmentVariable("Jwt__Audience", "brewery-api");
+
                 builder.ConfigureServices(services =>
                 {
                     // Replace authentication with a test handler that automatically

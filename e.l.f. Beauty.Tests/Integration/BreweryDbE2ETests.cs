@@ -28,6 +28,13 @@ namespace e.l.f._Beauty.Tests.Integration
 
             using var clientFactory = _factory.WithWebHostBuilder(builder =>
             {
+                using var sha512 = System.Security.Cryptography.SHA512.Create();
+                var keyBytes = sha512.ComputeHash(System.Text.Encoding.UTF8.GetBytes("e2e-integration-key"));
+                var base64Key = System.Convert.ToBase64String(keyBytes);
+                System.Environment.SetEnvironmentVariable("Jwt__Key", base64Key);
+                System.Environment.SetEnvironmentVariable("Jwt__Issuer", "brewery-api");
+                System.Environment.SetEnvironmentVariable("Jwt__Audience", "brewery-api");
+
                 builder.ConfigureServices(services =>
                 {
                     // Replace DbContext registration with a file-based SQLite DB for this test
