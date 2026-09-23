@@ -58,6 +58,9 @@ Authentication flow
   1) IConfiguration values (e.g., user-secrets Auth:Username/Auth:Password)
   2) AUTH_USERNAME / AUTH_PASSWORD environment variables
   3) Default development credentials (admin / password) when nothing else is configured
+
+Important security note:
+- This project is a demo. The login flow compares supplied credentials to values provided via configuration or environment variables at runtime; there is no user database, no password hashing, and no password encryption implemented by this project. Do not use these defaults or this approach in production. For real applications use a proper user store and salted password hashing (e.g., ASP.NET Core Identity or an external identity provider).
 - On successful login the controller issues a signed JWT (HMAC-SHA256) using the configured Jwt:Key.
 - Token validation: the API uses JwtSecurityTokenHandler / TokenValidationParameters for validation; a diagnostic
   endpoint is available to verify token validity and signature.
@@ -65,7 +68,7 @@ Authentication flow
 Configuration and secrets
 -------------------------
 - Required values (appsettings or user-secrets / env vars):
-  - Jwt:Key (Base64 or raw string) — signing key used for JWTs
+	- Jwt:Key (Base64 or raw string) — signing key used for JWTs. Note: Base64 is an encoding format (not encryption); the raw bytes are used as the HMAC signing key.
   - Jwt:Issuer — issuer string for tokens
   - Jwt:Audience — audience string for tokens
   - Auth:Username / Auth:Password (optional) or AUTH_USERNAME / AUTH_PASSWORD env vars
@@ -683,7 +686,7 @@ az webapp deploy -n elf-brewery-app -g elf-brewery-rg --src-path ./e.l.f. Beauty
 ```
 
 Notes
-- Replace <base64key> with a secure Base64-encoded 256-bit key. For production, use a secret manager instead of app settings.
+  - Replace <base64key> with a secure Base64-encoded key. For production, use a secret manager instead of app settings.
 - Adjust ports and hostnames as appropriate for your environment.
 
 Creating Repository for e.l.f-brewery-api
