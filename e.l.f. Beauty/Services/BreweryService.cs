@@ -59,6 +59,18 @@ namespace e.l.f._Beauty.Services
 
                 var cacheKey = "breweries:" + string.Join("&", keyParts);
 
+                // Validate query options early so callers receive a 400 Bad Request for
+                // client-correctable mistakes (e.g., requesting distance sort without
+                // providing user coordinates). Throwing ArgumentException here is
+                // mapped to 400 by GlobalExceptionMiddleware.
+                if (!string.IsNullOrWhiteSpace(options.SortBy) && options.SortBy.Equals("distance", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!options.UserLat.HasValue || !options.UserLng.HasValue)
+                    {
+                        throw new ArgumentException("User latitude and longitude are required when sorting by distance.", "sortBy");
+                    }
+                }
+
                 // Determine whether the repository can provide a total count.
                 // If it can, assume the repository also handled paging and trust
                 // its returned slice. If it cannot (returns null) the service

@@ -52,6 +52,26 @@ namespace e.l.f._Beauty.Controllers
         [HttpGet]
         public async Task<ActionResult<PagedResult<Brewery>>> GetBreweries([FromQuery] BreweryQueryOptions options)
         {
+            // Validate client-provided combinations to return a 400 Bad Request for
+            // client-correctable mistakes (e.g. requesting distance sort without
+            // providing user coordinates). This prevents such errors from bubbling
+            // into unhandled exceptions and ensures consistent client-facing
+            // responses.
+            if (!string.IsNullOrWhiteSpace(options?.SortBy) && options.SortBy.Equals("distance", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!options.UserLat.HasValue || !options.UserLng.HasValue)
+                {
+                    var pd = new ProblemDetails
+                    {
+                        Title = "Bad request",
+                        Detail = "User latitude and longitude are required when sorting by distance.",
+                        Status = StatusCodes.Status400BadRequest
+                    };
+                    pd.Extensions["paramName"] = "sortBy";
+                    return BadRequest(pd);
+                }
+            }
+
             var result = await _service.GetBreweriesAsync(options);
             return Ok(result);
         }
