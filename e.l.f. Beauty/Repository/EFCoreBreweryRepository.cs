@@ -46,8 +46,10 @@ namespace e.l.f._Beauty.Repository
                     query = options.Ascending ? query.OrderBy(b => b.City) : query.OrderByDescending(b => b.City);
             }
 
-            var page = options?.Page ?? 1;
-            var pageSize = options?.PageSize ?? 10;
+            // Normalize options to a non-null local instance to satisfy nullable analysis
+            var localOptions = options ?? new BreweryQueryOptions();
+            var page = localOptions.Page;
+            var pageSize = localOptions.PageSize;
             if (page < 1) page = 1;
             if (pageSize < 1) pageSize = 10;
             if (pageSize > 100) pageSize = 100;
@@ -58,11 +60,14 @@ namespace e.l.f._Beauty.Repository
             // prefix to avoid double-pagination; when page==1 return up to pageSize
             // items. If callers request page>1 directly against EF repository we
             // still perform normal skip/take semantics.
-            if ((options?.Page ?? 1) == 1 && (options?.PageSize ?? pageSize) != pageSize)
+            // If caller provided an explicit options instance that requests page 1
+            // but a different PageSize, respect that bounded-prefix request.
+            var requestedPage = options?.Page ?? localOptions.Page;
+            var requestedPageSize = options?.PageSize;
+            if (requestedPage == 1 && requestedPageSize.HasValue && requestedPageSize.Value != pageSize)
             {
-                // Respect explicit request that targets a larger prefix starting at page 1
                 page = 1;
-                pageSize = options.PageSize;
+                pageSize = requestedPageSize.Value;
                 if (pageSize < 1) pageSize = 10;
                 if (pageSize > 100) pageSize = 100;
             }

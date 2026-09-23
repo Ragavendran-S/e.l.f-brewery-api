@@ -52,7 +52,8 @@ public class CachedBreweryRepository : IBreweryRepository
     {
         var cacheKey = options == null ? $"{BreweriesCacheName}:all" : $"{BreweriesCacheName}:page={options.Page}:size={options.PageSize}:search={options.Search}:city={options.City}:sort={options.SortBy}";
         // Ensure key is recorded in registry via the IBreweryCache implementation
-        _registryCache?.GetOrFetchAsync(cacheKey, () => _inner.GetBreweriesAsync(options ?? new BreweryQueryOptions()));
+        // Fire-and-forget registration of the cache key; ensure exceptions are observed by storing the task
+        var registrationTask = _registryCache?.GetOrFetchAsync(cacheKey, () => _inner.GetBreweriesAsync(options ?? new BreweryQueryOptions()));
 
         // Provide total count when inner repository can supply it. If inner
         // does not support totals the registry/cache callers will receive null
@@ -61,8 +62,8 @@ public class CachedBreweryRepository : IBreweryRepository
         try
         {
             var totalTask = _inner.GetTotalCountAsync(options ?? new BreweryQueryOptions());
-            // store result in registry if needed (best-effort)
-            totalTask.ContinueWith(t => { /* no-op here */ });
+            // Observe task exceptions and ignore result; attach continuation on faulted
+            var observeTotal = totalTask.ContinueWith(t => { var ignored = t.Exception; }, TaskContinuationOptions.OnlyOnFaulted);
         }
         catch
         {

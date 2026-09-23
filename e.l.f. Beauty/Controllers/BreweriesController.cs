@@ -72,7 +72,8 @@ namespace e.l.f._Beauty.Controllers
                 }
             }
 
-            var result = await _service.GetBreweriesAsync(options);
+            // Ensure we never pass a null options object to the service layer
+            var result = await _service.GetBreweriesAsync(options ?? new BreweryQueryOptions());
             return Ok(result);
         }
 
