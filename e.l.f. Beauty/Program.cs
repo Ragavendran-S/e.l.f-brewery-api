@@ -185,6 +185,15 @@ builder.Services.AddScoped<IBreweryCache, MemoryBreweryCache>();
 // and to avoid leaving tested implementations unreachable at runtime.
 builder.Services.AddScoped<e.l.f._Beauty.Repository.EfCoreBreweryRepository>();
 builder.Services.AddScoped<CachedBreweryRepository>();
+// Register concrete BreweryRepository so it can be used directly (e.g., by orchestrator)
+builder.Services.AddScoped<BreweryRepository>(sp =>
+{
+    var upstream = sp.GetRequiredService<IUpstreamBreweryClient>();
+    var repoLogger = sp.GetRequiredService<ILogger<BreweryRepository>>();
+    var db = sp.GetService<BreweryDbContext>();
+    var paging = sp.GetRequiredService<IPagingHelper>();
+    return new BreweryRepository(upstream, db, repoLogger, paging);
+});
 // Configure the upstream brewery HTTP client with a sensible BaseAddress so any
 // relative URIs used by the client will work even if callers forget to set a
 // BaseAddress on the HttpClient. The client implementation prefers absolute
@@ -232,6 +241,17 @@ builder.Services.AddScoped<IBrewerySorterFactory, BrewerySorterFactory>();
 builder.Services.AddScoped<IBrewerySorter, NameSorter>();
 builder.Services.AddScoped<IBrewerySorter, CitySorter>();
 builder.Services.AddScoped<IPagingHelper, PagingHelper>();
+// Register orchestrator which can choose between DB and upstream repositories
+builder.Services.AddScoped<IBreweryOrchestrator>(sp =>
+{
+    var efRepo = sp.GetService<e.l.f._Beauty.Repository.EfCoreBreweryRepository>();
+    var upstreamRepo = sp.GetRequiredService<BreweryRepository>();
+    var db = sp.GetService<BreweryDbContext>();
+    var logger = sp.GetRequiredService<ILogger<BreweryOrchestrator>>();
+    // If EF repo is not available, use upstreamRepo for both roles
+    var dbRepository = (IBreweryRepository?)efRepo ?? upstreamRepo;
+    return new BreweryOrchestrator(dbRepository, upstreamRepo, db, logger);
+});
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 //builder.Services.AddSwaggerGen();

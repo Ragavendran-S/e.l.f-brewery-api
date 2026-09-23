@@ -74,12 +74,20 @@ public class BreweryServiceAdditionalTests
     {
         public Task AddBreweryAsync(Brewery brewery) => Task.CompletedTask;
         public Task<BulkInsertResult> AddBreweriesAsync(IEnumerable<Brewery> breweries) => Task.FromResult(new BulkInsertResult { Total = breweries.Count(), SuccessCount = breweries.Count(), FailedCount = 0 });
-        public Task<IEnumerable<Brewery>> GetBreweriesAsync(BreweryQueryOptions options) => Task.FromResult<IEnumerable<Brewery>>(new List<Brewery>
+        public Task<IEnumerable<Brewery>> GetBreweriesAsync(BreweryQueryOptions options)
         {
-            new Brewery { Id = "1", Name = "A", Latitude = 37.001, Longitude = -122.001 }, // closest
-            new Brewery { Id = "2", Name = "B", Latitude = 37.01, Longitude = -122.01 },
-            new Brewery { Id = "3", Name = "C", Latitude = 38.0, Longitude = -123.0 }
-        });
+            var list = new List<Brewery>
+            {
+                new Brewery { Id = "1", Name = "A", Latitude = 37.001, Longitude = -122.001 }, // closest
+                new Brewery { Id = "2", Name = "B", Latitude = 37.01, Longitude = -122.01 },
+                new Brewery { Id = "3", Name = "C", Latitude = 38.0, Longitude = -123.0 }
+            };
+            // Honor paging when caller requests it (simulates EF-backed repo behavior)
+            var page = options?.Page ?? 1;
+            var pageSize = options?.PageSize ?? 10;
+            var items = list.Skip((Math.Max(1, page) - 1) * pageSize).Take(pageSize);
+            return Task.FromResult<IEnumerable<Brewery>>(items);
+        }
         public Task<int?> GetTotalCountAsync(BreweryQueryOptions options) => Task.FromResult<int?>(3);
         public Task<IEnumerable<Brewery>> SearchBreweriesAsync(string query) => Task.FromResult<IEnumerable<Brewery>>(new List<Brewery>());
         public Task<IEnumerable<Brewery?>> GetBreweryByNameAsync(string name) => Task.FromResult<IEnumerable<Brewery?>>(new List<Brewery?>());
@@ -89,13 +97,20 @@ public class BreweryServiceAdditionalTests
     {
         public Task AddBreweryAsync(Brewery brewery) => Task.CompletedTask;
         public Task<BulkInsertResult> AddBreweriesAsync(IEnumerable<Brewery> breweries) => Task.FromResult(new BulkInsertResult { Total = breweries.Count(), SuccessCount = breweries.Count(), FailedCount = 0 });
-        public Task<IEnumerable<Brewery>> GetBreweriesAsync(BreweryQueryOptions options) => Task.FromResult<IEnumerable<Brewery>>(new List<Brewery>
+        public Task<IEnumerable<Brewery>> GetBreweriesAsync(BreweryQueryOptions options)
         {
-            new Brewery { Id = "1", Name = "A" },
-            new Brewery { Id = "2", Name = "B" },
-            new Brewery { Id = "3", Name = "C" },
-            new Brewery { Id = "4", Name = "D" }
-        });
+            var list = new List<Brewery>
+            {
+                new Brewery { Id = "1", Name = "A" },
+                new Brewery { Id = "2", Name = "B" },
+                new Brewery { Id = "3", Name = "C" },
+                new Brewery { Id = "4", Name = "D" }
+            };
+            var page = options?.Page ?? 1;
+            var pageSize = options?.PageSize ?? 10;
+            var items = list.OrderBy(b => b.Name).Skip((Math.Max(1, page) - 1) * pageSize).Take(pageSize);
+            return Task.FromResult<IEnumerable<Brewery>>(items);
+        }
         public Task<int?> GetTotalCountAsync(BreweryQueryOptions options) => Task.FromResult<int?>(4);
         public Task<IEnumerable<Brewery>> SearchBreweriesAsync(string query) => Task.FromResult<IEnumerable<Brewery>>(new List<Brewery>());
         public Task<IEnumerable<Brewery?>> GetBreweryByNameAsync(string name) => Task.FromResult<IEnumerable<Brewery?>>(new List<Brewery?>());

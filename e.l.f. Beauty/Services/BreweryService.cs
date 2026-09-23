@@ -71,10 +71,21 @@ namespace e.l.f._Beauty.Services
                 {
                     // Repository supports totals (EF-backed). Request the exact
                     // page from repository and treat the returned items as already
-                    // paged. Cache the repository response keyed by the full options
-                    // including page/pageSize.
-                    breweries = await _cache.GetOrFetchAsync(cacheKey, () => _repository.GetBreweriesAsync(options));
+                    // paged. Do NOT apply service-side paging/filtering/sorting to
+                    // avoid double-pagination: the repository is the source of
+                    // truth for filtered/sorted/paged slices when it can provide
+                    // a total count.
+                    var pagedItems = await _cache.GetOrFetchAsync(cacheKey, () => _repository.GetBreweriesAsync(options));
+
+                    // Ensure page/pageSize are normalized for the PagedResult
+                    var page = Math.Max(1, options.Page);
+                    var pageSize = Math.Clamp(options.PageSize, 1, 100);
+
+                    _logger.LogInformation("Returning {Count} items out of {Total} total for Page {Page} with PageSize {PageSize}.", pagedItems?.Count() ?? 0, repoTotal.Value, page, pageSize);
+
+                    return new PagedResult<Brewery>(pagedItems ?? Enumerable.Empty<Brewery>(), repoTotal.Value, page, pageSize);
                 }
+
                 else
                 {
                     // Repository does not support totals (upstream or in-memory that
@@ -104,7 +115,6 @@ namespace e.l.f._Beauty.Services
 
                     breweries = await _cache.GetOrFetchAsync(repoCacheKey, () => _repository.GetBreweriesAsync(repoFetchOptions));
                 }
-
                 // Apply any additional in-memory filtering/sorting that the repository
                 // could not perform. Note: because cache keys include the options, this
                 // avoids returning unrelated cached datasets.
