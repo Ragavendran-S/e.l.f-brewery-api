@@ -2,6 +2,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
@@ -22,6 +23,17 @@ namespace e.l.f._Beauty.Tests.Integration
         {
             var clientFactory = _factory.WithWebHostBuilder(builder =>
             {
+                // Provide deterministic JWT signing key for test runs so the host can start
+                // Set environment variables here so Program.ResolveJwtKey and configuration
+                // pick them up without requiring extra configuration assemblies in the test project.
+                using var sha512 = System.Security.Cryptography.SHA512.Create();
+                var keyBytes = sha512.ComputeHash(System.Text.Encoding.UTF8.GetBytes("e2e-integration-key"));
+                var base64Key = System.Convert.ToBase64String(keyBytes);
+                // Use the double-underscore form so ASP.NET configuration maps them to Jwt:Key etc.
+                System.Environment.SetEnvironmentVariable("Jwt__Key", base64Key);
+                System.Environment.SetEnvironmentVariable("Jwt__Issuer", "brewery-api");
+                System.Environment.SetEnvironmentVariable("Jwt__Audience", "brewery-api");
+
                 builder.ConfigureServices(services =>
                 {
                     // Use test authentication so the request is treated as authenticated
