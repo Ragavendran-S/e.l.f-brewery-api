@@ -8,7 +8,7 @@ public class AutoMapperTests
 
     public AutoMapperTests()
     {
-        var config = new MapperConfiguration(cfg =>
+        var config = AutoMapperTestHelper.CreateConfiguration(cfg =>
         {
             cfg.AddProfile<BreweryProfile>();
             // CustomerProfile not present in this solution; skip to keep tests focused on brewery mapping
@@ -26,7 +26,7 @@ public class AutoMapperTests
     public void AutoMapper_Configuration_IsValid()
     {
         // If configuration is invalid, this test fails
-        var config = new MapperConfiguration(cfg =>
+        var config = AutoMapperTestHelper.CreateConfiguration(cfg =>
         {
             // Simple identity mapping assertions for Brewery <-> BreweryResponse
             cfg.CreateMap<Brewery, BreweryResponse>();

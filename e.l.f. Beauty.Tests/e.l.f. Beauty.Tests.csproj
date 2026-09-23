@@ -29,8 +29,8 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <!-- Use AutoMapper 12.x to match application package used by tests -->
-    <PackageReference Include="AutoMapper" Version="12.0.1" />
+    <!-- Use the patched AutoMapper version to match the application package used by tests -->
+    <PackageReference Include="AutoMapper" Version="15.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.0" />
   </ItemGroup>

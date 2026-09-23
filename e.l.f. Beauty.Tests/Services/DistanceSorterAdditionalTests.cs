@@ -12,7 +12,7 @@ namespace e.l.f._Beauty.Tests.Services
 
         public DistanceSorterAdditionalTests()
         {
-            var config = new MapperConfiguration(cfg => cfg.AddProfile<BreweryProfile>());
+            var config = AutoMapperTestHelper.CreateConfiguration(cfg => cfg.AddProfile<BreweryProfile>());
             config.AssertConfigurationIsValid();
             _mapper = config.CreateMapper();
 

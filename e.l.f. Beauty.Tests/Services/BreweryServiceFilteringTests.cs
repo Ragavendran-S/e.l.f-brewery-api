@@ -14,7 +14,7 @@ public class BreweryServiceFilteringTests
 
     public BreweryServiceFilteringTests()
     {
-        var config = new AutoMapper.MapperConfiguration(cfg => cfg.AddMaps(typeof(BreweryProfile).Assembly));
+        var config = AutoMapperTestHelper.CreateConfiguration(cfg => cfg.AddMaps(typeof(BreweryProfile).Assembly));
         _mapper = config.CreateMapper();
     }
 

@@ -12,7 +12,7 @@ namespace e.l.f._Beauty.Tests.AutoMapper
 
         public ExternalBreweryMappingTests()
         {
-            var config = new MapperConfiguration(cfg => cfg.AddProfile(new BreweryProfile()));
+            var config = AutoMapperTestHelper.CreateConfiguration(cfg => cfg.AddProfile(new BreweryProfile()));
             config.AssertConfigurationIsValid();
             _mapper = config.CreateMapper();
         }

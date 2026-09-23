@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
@@ -137,7 +138,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 // Register AutoMapper manually so we don't depend on the extension package here.
-var mappingConfig = new MapperConfiguration(cfg => cfg.AddMaps(typeof(BreweryProfile).Assembly));
+var mapperConfigurationExpression = new MapperConfigurationExpression();
+mapperConfigurationExpression.AddMaps(typeof(BreweryProfile).Assembly);
+var mappingConfig = new MapperConfiguration(
+    mapperConfigurationExpression,
+    NullLoggerFactory.Instance);
 IMapper mapper = mappingConfig.CreateMapper();
 builder.Services.AddSingleton(mappingConfig);
 builder.Services.AddSingleton(mapper);
@@ -363,4 +368,3 @@ app.Run();
 // can reference the entry point assembly. This pattern is common when using top-level
 // statements in Program.cs.
 public partial class Program { }
-
