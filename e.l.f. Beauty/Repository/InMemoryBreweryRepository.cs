@@ -48,12 +48,19 @@ public class CachedBreweryRepository : IBreweryRepository
         return res;
     }
 
-    public async Task<IEnumerable<Brewery>> GetBreweriesAsync(BreweryQueryOptions options)
-    {
-        var cacheKey = options == null ? $"{BreweriesCacheName}:all" : $"{BreweriesCacheName}:page={options.Page}:size={options.PageSize}:search={options.Search}:city={options.City}:sort={options.SortBy}";
-        // Ensure key is recorded in registry via the IBreweryCache implementation
-        // Fire-and-forget registration of the cache key; ensure exceptions are observed by storing the task
-        var registrationTask = _registryCache?.GetOrFetchAsync(cacheKey, () => _inner.GetBreweriesAsync(options ?? new BreweryQueryOptions()));
+        public async Task<IEnumerable<Brewery>> GetBreweriesAsync(BreweryQueryOptions options)
+        {
+            var cacheKey = options == null ? $"{BreweriesCacheName}:all" : $"{BreweriesCacheName}:page={options.Page}:size={options.PageSize}:search={options.Search}:city={options.City}:sort={options.SortBy}";
+            // Ensure key is recorded in registry via the IBreweryCache implementation
+            // Register the cache key without triggering a fetch from the inner repository
+            try
+            {
+                _registryCache?.RegisterKey(cacheKey);
+            }
+            catch
+            {
+                // Swallow any registry errors; registry is best-effort
+            }
 
         // Provide total count when inner repository can supply it. If inner
         // does not support totals the registry/cache callers will receive null
