@@ -241,17 +241,7 @@ builder.Services.AddScoped<IBrewerySorterFactory, BrewerySorterFactory>();
 builder.Services.AddScoped<IBrewerySorter, NameSorter>();
 builder.Services.AddScoped<IBrewerySorter, CitySorter>();
 builder.Services.AddScoped<IPagingHelper, PagingHelper>();
-// Register orchestrator which can choose between DB and upstream repositories
-builder.Services.AddScoped<IBreweryOrchestrator>(sp =>
-{
-    var efRepo = sp.GetService<e.l.f._Beauty.Repository.EfCoreBreweryRepository>();
-    var upstreamRepo = sp.GetRequiredService<BreweryRepository>();
-    var db = sp.GetService<BreweryDbContext>();
-    var logger = sp.GetRequiredService<ILogger<BreweryOrchestrator>>();
-    // If EF repo is not available, use upstreamRepo for both roles
-    var dbRepository = (IBreweryRepository?)efRepo ?? upstreamRepo;
-    return new BreweryOrchestrator(dbRepository, upstreamRepo, db, logger);
-});
+// BreweryOrchestrator was removed as dead code; no DI registration required.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 //builder.Services.AddSwaggerGen();
