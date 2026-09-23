@@ -302,6 +302,30 @@ Notes:
 - When the repository can provide a total (DB-backed path) totalItems will be populated and the service trusts the repository to return the correct page slice. If totalItems is null the service will compute it by requesting a bounded prefix and applying in-memory paging. Always check totalItems to determine whether the server provided a DB-backed total.
 - For distance sorting include userLat and userLng query parameters. The API will return 400 Bad Request if sortBy=distance is requested without coordinates.
 
+## 4BB Running the DB-backed end-to-end test locally
+
+The project includes an end-to-end integration test that exercises the real DB-backed multi-page listing using a temporary on-disk SQLite file. Run it locally to reproduce and validate paging behavior.
+
+Prereqs
+- .NET 8 SDK installed and on PATH
+- Close other running instances of the app or tests that may hold Temp files
+
+Run a single E2E test from repository root (PowerShell):
+
+```
+dotnet test "e.l.f. Beauty.Tests/e.l.f. Beauty.Tests.csproj" --filter "FullyQualifiedName=e.l.f._Beauty.Tests.Integration.BreweryDbE2ETests.GetBreweries_ReturnsPage2_FromRealDb_Backend" --logger "console;verbosity=minimal"
+```
+
+Run the entire integration test collection (optional):
+
+```
+dotnet test "e.l.f. Beauty.Tests/e.l.f. Beauty.Tests.csproj" --filter "FullyQualifiedName~Integration" --logger "console;verbosity=minimal"
+```
+
+Notes and troubleshooting
+- The E2E test creates a temporary SQLite file in your system Temp directory and disposes the test host before attempting to delete it. If you see an IOException saying the file is in use, ensure no other test host or app instance is running and re-run the test. The test includes a small retry loop for cleanup.
+- To debug the test in Visual Studio: open Test Explorer, find the test `GetBreweries_ReturnsPage2_FromRealDb_Backend`, right-click and Debug. You can set breakpoints in controller/service/repository code.
+
 }
 ```
 
