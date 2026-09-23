@@ -18,6 +18,12 @@ public interface IBreweryRepository
     // do not support bulk operations may fall back to per-item behavior.
     // Returns a summary result with counts and any failures recorded.
     Task<BulkInsertResult> AddBreweriesAsync(IEnumerable<Brewery> breweries);
+
+    // Indicates whether the repository implementation applies query-time
+    // filtering (search/city) and therefore the service layer should avoid
+    // re-applying the same filters in-memory which can cause duplicate work
+    // and subtle mismatches. Default is false for backward compatibility.
+    bool SupportsServerSideFiltering() => false;
 }
 
 public class BulkInsertResult

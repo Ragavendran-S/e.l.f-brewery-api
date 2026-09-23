@@ -128,9 +128,13 @@ namespace e.l.f._Beauty.Services
                     breweries = await _cache.GetOrFetchAsync(repoCacheKey, () => _repository.GetBreweriesAsync(repoFetchOptions));
                 }
                 // Apply any additional in-memory filtering/sorting that the repository
-                // could not perform. Note: because cache keys include the options, this
-                // avoids returning unrelated cached datasets.
-                breweries = _filter.Apply(breweries, options);
+                // could not perform. If the repository implementation indicates it
+                // already performed server-side filtering we must NOT re-apply
+                // the same search/city filters here to avoid duplicate filtering.
+                if (!_repository.SupportsServerSideFiltering())
+                {
+                    breweries = _filter.Apply(breweries, options);
+                }
 
                 var sorter = _sorterFactory.GetSorter(options.SortBy ?? string.Empty);
                 breweries = sorter.Sort(breweries, options);

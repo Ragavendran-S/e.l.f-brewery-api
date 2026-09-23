@@ -102,10 +102,27 @@ namespace e.l.f._Beauty.Repository
 
         public Task<int?> GetTotalCountAsync(BreweryQueryOptions options)
         {
+            // If a DbContext is available, compute and return the total count
+            // for the provided query filters. This lets callers (service layer)
+            // rely on repository-side pagination and avoid re-applying filters
+            // in-memory which would lead to duplicate filtering.
+            if (_dbContext != null)
+            {
+                var query = _dbContext.Breweries.AsNoTracking().AsQueryable();
+                if (!string.IsNullOrWhiteSpace(options?.Search))
+                    query = query.Where(b => EF.Functions.Like(b.Name, $"%{options.Search}%"));
+                if (!string.IsNullOrWhiteSpace(options?.City))
+                    query = query.Where(b => b.City == options.City);
+
+                return query.CountAsync().ContinueWith<int?>(t => t.Result);
+            }
+
             // Upstream client does not support a cheap total count; return null
-            // to indicate unknown total so callers will not rely on it.
+            // to indicate unknown total so callers will apply bounded-prefix logic.
             return Task.FromResult<int?>(null);
         }
+
+        public bool SupportsServerSideFiltering() => _dbContext != null;
 
         public async Task<IEnumerable<Brewery?>> GetBreweryByNameAsync(string name)
         {

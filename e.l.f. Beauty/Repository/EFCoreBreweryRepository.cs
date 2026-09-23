@@ -110,6 +110,8 @@ namespace e.l.f._Beauty.Repository
             return await query.CountAsync();
         }
 
+        public bool SupportsServerSideFiltering() => true;
+
         public async Task<IEnumerable<Brewery?>> GetBreweryByNameAsync(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
