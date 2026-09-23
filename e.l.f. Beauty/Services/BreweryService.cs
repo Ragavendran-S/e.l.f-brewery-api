@@ -59,31 +59,51 @@ namespace e.l.f._Beauty.Services
 
                 var cacheKey = "breweries:" + string.Join("&", keyParts);
 
-                // Fetch a dataset specific to the requested options from cache/repository.
-                // To avoid double-pagination when repository implementations apply
-                // server-side paging (EF Core), request a bounded prefix of items
-                // large enough to contain the requested page and let the service
-                // apply the final skip/take. This prevents the repository and the
-                // service from both skipping the same items which produced empty
-                // results for page >= 2.
-                var repoFetchOptions = new BreweryQueryOptions
+                // Determine whether the repository can provide a total count.
+                // If it can, assume the repository also handled paging and trust
+                // its returned slice. If it cannot (returns null) the service
+                // will fetch a bounded prefix and apply final paging itself.
+                var repoTotal = await _repository.GetTotalCountAsync(options);
+
+                IEnumerable<Brewery> breweries;
+
+                if (repoTotal.HasValue)
                 {
-                    Search = options.Search,
-                    City = options.City,
-                    SortBy = options.SortBy,
-                    Ascending = options.Ascending,
-                    UserLat = options.UserLat,
-                    UserLng = options.UserLng
-                };
+                    // Repository supports totals (EF-backed). Request the exact
+                    // page from repository and treat the returned items as already
+                    // paged. Cache the repository response keyed by the full options
+                    // including page/pageSize.
+                    breweries = await _cache.GetOrFetchAsync(cacheKey, () => _repository.GetBreweriesAsync(options));
+                }
+                else
+                {
+                    // Repository does not support totals (upstream or in-memory that
+                    // opts out). Request a bounded prefix (page 1) large enough to
+                    // contain requested page then apply paging in the service.
+                    var repoFetchOptions = new BreweryQueryOptions
+                    {
+                        Search = options.Search,
+                        City = options.City,
+                        SortBy = options.SortBy,
+                        Ascending = options.Ascending,
+                        UserLat = options.UserLat,
+                        UserLng = options.UserLng,
+                        Page = 1,
+                        PageSize = Math.Clamp(options.Page * options.PageSize, 1, 100)
+                    };
 
-                // Request first N*pageSize items from repository (clamped) so the
-                // service can safely apply paging without requiring the repository
-                // to return the full unbounded result set.
-                var requestedPageSize = Math.Clamp(options.Page * options.PageSize, 1, 100);
-                repoFetchOptions.Page = 1;
-                repoFetchOptions.PageSize = requestedPageSize;
+                    var repoCacheKey = "breweries:" + string.Join("&", new List<string>
+                    {
+                        $"page={repoFetchOptions.Page}",
+                        $"pageSize={repoFetchOptions.PageSize}",
+                        $"sortBy={Norm(options.SortBy)}",
+                        $"asc={options.Ascending}",
+                        $"search={Norm(options.Search)}",
+                        $"city={Norm(options.City)}",
+                    });
 
-                var breweries = await _cache.GetOrFetchAsync(cacheKey, () => _repository.GetBreweriesAsync(repoFetchOptions));
+                    breweries = await _cache.GetOrFetchAsync(repoCacheKey, () => _repository.GetBreweriesAsync(repoFetchOptions));
+                }
 
                 // Apply any additional in-memory filtering/sorting that the repository
                 // could not perform. Note: because cache keys include the options, this

@@ -5,6 +5,11 @@ using Microsoft.Extensions.Caching.Memory;
 public interface IBreweryRepository
 {
     Task<IEnumerable<Brewery>> GetBreweriesAsync(BreweryQueryOptions options);
+    // Returns total number of items that match the provided query filters when
+    // available. Implementations that cannot cheaply provide a total (for
+    // example upstream HTTP clients) may return null to indicate the value is
+    // unknown.
+    Task<int?> GetTotalCountAsync(BreweryQueryOptions options);
     Task<IEnumerable<Brewery>> SearchBreweriesAsync(string query);
     Task<IEnumerable<Brewery?>> GetBreweryByNameAsync(string name);
     Task AddBreweryAsync(Brewery brewery);

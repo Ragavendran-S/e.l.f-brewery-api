@@ -52,6 +52,7 @@ public class BreweryServiceTests
         public Task AddBreweryAsync(Brewery brewery) => Task.CompletedTask;
         public Task<BulkInsertResult> AddBreweriesAsync(IEnumerable<Brewery> breweries) => Task.FromResult(new BulkInsertResult { Total = breweries.Count(), SuccessCount = breweries.Count(), FailedCount = 0 });
         public Task<IEnumerable<Brewery>> GetBreweriesAsync(BreweryQueryOptions options) => Task.FromResult<IEnumerable<Brewery>>(new List<Brewery>());
+            public Task<int?> GetTotalCountAsync(BreweryQueryOptions options) => Task.FromResult<int?>(null);
         public Task<IEnumerable<Brewery>> SearchBreweriesAsync(string query)
         {
             // Pretend upstream already filtered results for the query

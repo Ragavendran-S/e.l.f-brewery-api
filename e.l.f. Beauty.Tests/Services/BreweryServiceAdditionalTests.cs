@@ -80,6 +80,7 @@ public class BreweryServiceAdditionalTests
             new Brewery { Id = "2", Name = "B", Latitude = 37.01, Longitude = -122.01 },
             new Brewery { Id = "3", Name = "C", Latitude = 38.0, Longitude = -123.0 }
         });
+        public Task<int?> GetTotalCountAsync(BreweryQueryOptions options) => Task.FromResult<int?>(3);
         public Task<IEnumerable<Brewery>> SearchBreweriesAsync(string query) => Task.FromResult<IEnumerable<Brewery>>(new List<Brewery>());
         public Task<IEnumerable<Brewery?>> GetBreweryByNameAsync(string name) => Task.FromResult<IEnumerable<Brewery?>>(new List<Brewery?>());
     }
@@ -95,6 +96,7 @@ public class BreweryServiceAdditionalTests
             new Brewery { Id = "3", Name = "C" },
             new Brewery { Id = "4", Name = "D" }
         });
+        public Task<int?> GetTotalCountAsync(BreweryQueryOptions options) => Task.FromResult<int?>(4);
         public Task<IEnumerable<Brewery>> SearchBreweriesAsync(string query) => Task.FromResult<IEnumerable<Brewery>>(new List<Brewery>());
         public Task<IEnumerable<Brewery?>> GetBreweryByNameAsync(string name) => Task.FromResult<IEnumerable<Brewery?>>(new List<Brewery?>());
     }

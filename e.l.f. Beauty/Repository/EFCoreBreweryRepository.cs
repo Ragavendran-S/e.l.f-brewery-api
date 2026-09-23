@@ -82,6 +82,17 @@ namespace e.l.f._Beauty.Repository
             return items;
         }
 
+        public async Task<int?> GetTotalCountAsync(BreweryQueryOptions options)
+        {
+            var query = _context.Breweries.AsNoTracking().AsQueryable();
+            if (!string.IsNullOrWhiteSpace(options?.Search))
+                query = query.Where(b => EF.Functions.Like(b.Name, $"%{options.Search}%"));
+            if (!string.IsNullOrWhiteSpace(options?.City))
+                query = query.Where(b => b.City == options.City);
+
+            return await query.CountAsync();
+        }
+
         public async Task<IEnumerable<Brewery?>> GetBreweryByNameAsync(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -172,5 +183,7 @@ namespace e.l.f._Beauty.Repository
 
             return results;
         }
+
+        // (No additional compatibility wrapper required)
     }
 }

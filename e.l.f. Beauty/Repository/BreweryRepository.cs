@@ -63,7 +63,7 @@ namespace e.l.f._Beauty.Repository
         public async Task<IEnumerable<Brewery>> GetBreweriesAsync(BreweryQueryOptions options)
         {
             // If DbContext is available, use it for DB-backed paging/filtering; otherwise defer to upstream.
-            if (_dbContext != null)
+            if (_dbContext is not null)
             {
                 var query = _dbContext.Breweries.AsNoTracking().AsQueryable();
                 if (!string.IsNullOrWhiteSpace(options?.Search))
@@ -98,6 +98,13 @@ namespace e.l.f._Beauty.Repository
             }
 
             return await _upstream.GetBreweriesAsync(options);
+        }
+
+        public Task<int?> GetTotalCountAsync(BreweryQueryOptions options)
+        {
+            // Upstream client does not support a cheap total count; return null
+            // to indicate unknown total so callers will not rely on it.
+            return Task.FromResult<int?>(null);
         }
 
         public async Task<IEnumerable<Brewery?>> GetBreweryByNameAsync(string name)

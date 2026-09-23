@@ -54,6 +54,21 @@ public class CachedBreweryRepository : IBreweryRepository
         // Ensure key is recorded in registry via the IBreweryCache implementation
         _registryCache?.GetOrFetchAsync(cacheKey, () => _inner.GetBreweriesAsync(options ?? new BreweryQueryOptions()));
 
+        // Provide total count when inner repository can supply it. If inner
+        // does not support totals the registry/cache callers will receive null
+        // and the service layer will handle bounded-prefix paging.
+        // Try to call inner.GetTotalCountAsync if available via interface.
+        try
+        {
+            var totalTask = _inner.GetTotalCountAsync(options ?? new BreweryQueryOptions());
+            // store result in registry if needed (best-effort)
+            totalTask.ContinueWith(t => { /* no-op here */ });
+        }
+        catch
+        {
+            // Ignore if inner does not implement the method (older implementations)
+        }
+
         var result = await _cache.GetOrCreateAsync(cacheKey, async entry =>
         {
             entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
@@ -97,5 +112,19 @@ public class CachedBreweryRepository : IBreweryRepository
         _cache.Remove(BreweriesCacheName);
         _cache.Remove($"{BreweriesCacheName}:brewery:{brewery.Id}");
         _logger.LogInformation("Cache invalidated after adding brewery {Id} at {Time}", brewery.Id, DateTime.UtcNow);
+    }
+
+    public async Task<int?> GetTotalCountAsync(BreweryQueryOptions options)
+    {
+        try
+        {
+            return await _inner.GetTotalCountAsync(options);
+        }
+        catch
+        {
+            // If inner does not support totals or fails, return null to indicate
+            // unknown total so callers (service) will apply bounded-prefix logic.
+            return null;
+        }
     }
 }
