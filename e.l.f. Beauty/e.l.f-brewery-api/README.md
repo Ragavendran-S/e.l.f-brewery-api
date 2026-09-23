@@ -253,6 +253,20 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<BreweryDbContext>();
     db.Database.Migrate(); // applies pending migrations automatically
+
+## Pagination contract (important)
+
+Service and repository responsibilities for filtering, sorting and paging are intentionally split:
+
+- Repository implementations SHOULD return a total count when they can cheaply compute it (for example, an EF Core-backed repository). When GetTotalCountAsync returns a non-null value the service will treat repository results as already-paged and will not re-apply paging or filters in-memory. This avoids double-pagination where both repository and service skip/take the same slice and can lead to empty pages.
+
+- Repository implementations that cannot provide a cheap total (for example, upstream HTTP clients) should return null from GetTotalCountAsync. In that case the service will request a bounded prefix and perform final filtering/sorting/paging in-memory to produce a PagedResult.
+
+Why this matters
+
+- Returning a total from DB-backed repositories ensures correct page semantics and better performance because the database performs filtering/sorting/paging efficiently. The project includes an end-to-end integration test that exercises a DB-backed multi-page listing to prevent regressions.
+
+If you implement a new repository, ensure GetTotalCountAsync behaves correctly for your backend.
 }
 ```
 
