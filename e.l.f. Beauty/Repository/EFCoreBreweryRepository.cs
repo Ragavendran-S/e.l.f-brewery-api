@@ -90,6 +90,21 @@ namespace e.l.f._Beauty.Repository
                     {
                         // Add range and commit once for efficiency. Use AddRange which
                         // will set entity states appropriately.
+                        // Ensure non-nullable string properties are not null to avoid
+                        // database NOT NULL constraint violations when upstream returns
+                        // missing fields (some upstream responses contain nulls).
+                        foreach (var b in upstreamItems)
+                        {
+                            if (b == null) continue;
+                            b.Id = b.Id ?? string.Empty;
+                            b.Name = b.Name ?? string.Empty;
+                            b.Brewery_Type = b.Brewery_Type ?? string.Empty;
+                            b.Street = b.Street ?? string.Empty;
+                            b.City = b.City ?? string.Empty;
+                            b.State = b.State ?? string.Empty;
+                            b.Country = b.Country ?? string.Empty;
+                            b.Phone = b.Phone ?? string.Empty;
+                        }
                         _context.Breweries.AddRange(upstreamItems);
                         await _context.SaveChangesAsync();
                         return upstreamItems;
