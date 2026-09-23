@@ -1,6 +1,7 @@
 ﻿using e.l.f._Beauty.Models;
 using e.l.f._Beauty.Repository;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace e.l.f._Beauty.Repository
 {
@@ -105,9 +106,15 @@ namespace e.l.f._Beauty.Repository
                             b.Country = b.Country ?? string.Empty;
                             b.Phone = b.Phone ?? string.Empty;
                         }
-                        _context.Breweries.AddRange(upstreamItems);
+                        // Remove duplicates by Id to avoid EF tracking conflicts when upstream returns duplicate entries
+                        var uniqueItems = upstreamItems
+                            .Where(b => b != null)
+                            .GroupBy(b => b.Id)
+                            .Select(g => g.First())
+                            .ToList();
+                        _context.Breweries.AddRange(uniqueItems);
                         await _context.SaveChangesAsync();
-                        return upstreamItems;
+                        return uniqueItems;
                     }
                     return Enumerable.Empty<Brewery>();
                 }
