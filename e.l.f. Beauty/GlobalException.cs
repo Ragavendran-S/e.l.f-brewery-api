@@ -113,6 +113,15 @@ namespace e.l.f.GlobalException
                 return (StatusCodes.Status401Unauthorized, "https://example.com/probs/unauthorized", "Unauthorized", ex.Message, extensions);
             }
 
+            // Invalid arguments (bad query/sort combinations etc.) map to 400 Bad Request
+            if (ex is ArgumentException aex)
+            {
+                if (!string.IsNullOrWhiteSpace(aex.ParamName))
+                    extensions["paramName"] = aex.ParamName;
+
+                return (StatusCodes.Status400BadRequest, "https://example.com/probs/bad-request", "Bad request", aex.Message, extensions);
+            }
+
             // Upstream HTTP errors (HttpRequestException with status)
             if (ex is UpstreamApiException uae)
             {
