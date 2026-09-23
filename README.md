@@ -142,6 +142,29 @@ When to expect DB-backed behavior:
   to upstream lookups and service-level paging remains a fallback.
 
 No action required for local development when using the provided test database. If you run into
+### EF Core / SQLite quick start
+
+To use a file-based SQLite database for local development follow these steps:
+
+1. Ensure `ConnectionStrings:DefaultConnection` in `e.l.f. Beauty/appsettings.json` is set to:
+
+```json
+"ConnectionStrings": { "DefaultConnection": "Data Source=brewery.db" }
+```
+
+2. Run the application; on first startup the app will apply pending EF Core migrations and create `brewery.db`.
+
+3. On first read the EF repository will fetch from the upstream API if the local `Breweries` table is empty and will seed the DB with the returned items.
+
+4. To manually apply migrations:
+
+```powershell
+cd "e.l.f. Beauty"
+dotnet ef database update
+```
+
+5. Use `scripts/init-dev-env.ps1 -NonInteractive` to initialize JWT user-secrets for local testing.
+
 
 API usage examples
 ------------------
