@@ -267,6 +267,41 @@ Why this matters
 - Returning a total from DB-backed repositories ensures correct page semantics and better performance because the database performs filtering/sorting/paging efficiently. The project includes an end-to-end integration test that exercises a DB-backed multi-page listing to prevent regressions.
 
 If you implement a new repository, ensure GetTotalCountAsync behaves correctly for your backend.
+
+## 📄 Paged responses — example queries and JSON shape
+
+Here are common example queries and the expected JSON shape for paged responses returned by the API. The API uses a PagedResult<T> envelope with the following properties:
+
+- items: array of result objects
+- totalItems: total number of matching items (when available)
+- page: current page number (1-based)
+- pageSize: items per page
+
+Example: request page 2 of breweries, 5 items per page, sorted by Name ascending
+
+GET /api/v1/breweries?page=2&pageSize=5&sortBy=Name&asc=true
+
+Expected 200 response body (abridged):
+
+```
+{
+  "items": [
+    { "id": "6", "name": "Local 006", "city": "AnyTown", "latitude": null, "longitude": null },
+    { "id": "7", "name": "Local 007", "city": "AnyTown", "latitude": null, "longitude": null },
+    { "id": "8", "name": "Local 008", "city": "AnyTown", "latitude": null, "longitude": null },
+    { "id": "9", "name": "Local 009", "city": "AnyTown", "latitude": null, "longitude": null },
+    { "id": "10", "name": "Local 010", "city": "AnyTown", "latitude": null, "longitude": null }
+  ],
+  "totalItems": 12,
+  "page": 2,
+  "pageSize": 5
+}
+```
+
+Notes:
+- When the repository can provide a total (DB-backed path) totalItems will be populated and the service trusts the repository to return the correct page slice. If totalItems is null the service will compute it by requesting a bounded prefix and applying in-memory paging. Always check totalItems to determine whether the server provided a DB-backed total.
+- For distance sorting include userLat and userLng query parameters. The API will return 400 Bad Request if sortBy=distance is requested without coordinates.
+
 }
 ```
 
