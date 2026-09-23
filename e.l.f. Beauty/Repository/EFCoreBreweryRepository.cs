@@ -74,7 +74,24 @@ namespace e.l.f._Beauty.Repository
             if (!hasAny)
             {
                 if (_upstream != null)
-                    return await _upstream.GetBreweriesAsync(options);
+                {
+                    // When the local DB is empty attempt to retrieve data from the
+                    // upstream API and seed the local table so subsequent reads come
+                    // from the DB (DB-first). Limit behavior to the upstream client
+                    // response for the provided options; do not attempt to page the
+                    // entire upstream dataset here.
+                    var upstreamItems = (await _upstream.GetBreweriesAsync(options))?.ToList() ?? new List<Brewery>();
+                    if (upstreamItems.Any())
+                    {
+                        // Add range and commit once for efficiency. Use AddRange which
+                        // will set entity states appropriately.
+                        _context.Breweries.AddRange(upstreamItems);
+                        await _context.SaveChangesAsync();
+                        return upstreamItems;
+                    }
+                    return Enumerable.Empty<Brewery>();
+                }
+
                 return Enumerable.Empty<Brewery>();
             }
 

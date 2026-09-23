@@ -309,26 +309,35 @@ var logger = app.Services.GetRequiredService<ILogger<Program>>();
 logger.LogInformation(EventIds.AuthStartup, "JWT authentication configured");
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<BreweryDbContext>();
-    // Only apply relational migrations when a relational provider is in use (e.g., SQLite/SqlServer).
-    // In-memory or other non-relational providers do not support Migrate() and will throw.
-    try
+    // BreweryDbContext may not be registered when no DefaultConnection is configured.
+    // Use GetService so startup does not throw when the DbContext is absent and tests
+    // intentionally run without a relational provider.
+    var db = scope.ServiceProvider.GetService<BreweryDbContext>();
+    if (db == null)
     {
-        if (db.Database.IsRelational())
-        {
-            db.Database.Migrate(); // applies pending migrations
-        }
-        else
-        {
-            // For non-relational providers (like InMemory used in tests), ensure database is created.
-            db.Database.EnsureCreated();
-        }
+        logger.LogInformation("BreweryDbContext not registered; skipping database migrations/initialization.");
     }
-    catch (Exception ex)
+    else
     {
-        // Startup should not crash tests for provider-specific behaviors; log and continue.
-        var startupLogger = scope.ServiceProvider.GetService<ILogger<Program>>();
-        startupLogger?.LogWarning(ex, "Database migration/creation skipped due to provider limitations: {Message}", ex.Message);
+        // Only apply relational migrations when a relational provider is in use (e.g., SQLite/SqlServer).
+        // In-memory or other non-relational providers do not support Migrate() and will throw.
+        try
+        {
+            if (db.Database.IsRelational())
+            {
+                db.Database.Migrate(); // applies pending migrations
+            }
+            else
+            {
+                // For non-relational providers (like InMemory used in tests), ensure database is created.
+                db.Database.EnsureCreated();
+            }
+        }
+        catch (Exception ex)
+        {
+            // Startup should not crash tests for provider-specific behaviors; log and continue.
+            logger.LogWarning(ex, "Database migration/creation skipped due to provider limitations: {Message}", ex.Message);
+        }
     }
 }
 
