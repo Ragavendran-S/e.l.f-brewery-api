@@ -60,7 +60,30 @@ namespace e.l.f._Beauty.Services
                 var cacheKey = "breweries:" + string.Join("&", keyParts);
 
                 // Fetch a dataset specific to the requested options from cache/repository.
-                var breweries = await _cache.GetOrFetchAsync(cacheKey, () => _repository.GetBreweriesAsync(options));
+                // To avoid double-pagination when repository implementations apply
+                // server-side paging (EF Core), request a bounded prefix of items
+                // large enough to contain the requested page and let the service
+                // apply the final skip/take. This prevents the repository and the
+                // service from both skipping the same items which produced empty
+                // results for page >= 2.
+                var repoFetchOptions = new BreweryQueryOptions
+                {
+                    Search = options.Search,
+                    City = options.City,
+                    SortBy = options.SortBy,
+                    Ascending = options.Ascending,
+                    UserLat = options.UserLat,
+                    UserLng = options.UserLng
+                };
+
+                // Request first N*pageSize items from repository (clamped) so the
+                // service can safely apply paging without requiring the repository
+                // to return the full unbounded result set.
+                var requestedPageSize = Math.Clamp(options.Page * options.PageSize, 1, 100);
+                repoFetchOptions.Page = 1;
+                repoFetchOptions.PageSize = requestedPageSize;
+
+                var breweries = await _cache.GetOrFetchAsync(cacheKey, () => _repository.GetBreweriesAsync(repoFetchOptions));
 
                 // Apply any additional in-memory filtering/sorting that the repository
                 // could not perform. Note: because cache keys include the options, this

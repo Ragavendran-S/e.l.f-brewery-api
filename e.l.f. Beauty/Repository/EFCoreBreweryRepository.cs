@@ -52,6 +52,21 @@ namespace e.l.f._Beauty.Repository
             if (pageSize < 1) pageSize = 10;
             if (pageSize > 100) pageSize = 100;
 
+            // If the repository was asked to return a bounded prefix (page=1 with
+            // pageSize > actual pageSize) honor that and return the requested
+            // limited slice. Consumers (service layer) may request a larger
+            // prefix to avoid double-pagination; when page==1 return up to pageSize
+            // items. If callers request page>1 directly against EF repository we
+            // still perform normal skip/take semantics.
+            if ((options?.Page ?? 1) == 1 && (options?.PageSize ?? pageSize) != pageSize)
+            {
+                // Respect explicit request that targets a larger prefix starting at page 1
+                page = 1;
+                pageSize = options.PageSize;
+                if (pageSize < 1) pageSize = 10;
+                if (pageSize > 100) pageSize = 100;
+            }
+
             // If the database table is empty, fall back to the upstream API so the
             // running service can still return useful data even when the local DB
             // hasn't been seeded.

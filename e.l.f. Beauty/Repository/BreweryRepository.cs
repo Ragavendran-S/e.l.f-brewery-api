@@ -85,6 +85,9 @@ namespace e.l.f._Beauty.Repository
                 // Use provided paging helper when available; otherwise apply simple LINQ pagination.
                 if (_pagingHelper != null)
                 {
+                    // When service requests a bounded prefix (page=1, larger pageSize)
+                    // let the paging helper apply the requested range. This supports
+                    // the service fetching a prefix to avoid double-skipping.
                     var paged = _pagingHelper.ApplyPaging(query, page, pageSize);
                     var items = await paged.ToListAsync();
                     return items;
